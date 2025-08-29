@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+# record options at configure time
+set(FEBUNDLE_WITH_IMGUI "@FEBUNDLE_WITH_IMGUI@")
+set(FEBUNDLE_IMGUI_SDL3_GL3 "@FEBUNDLE_IMGUI_SDL3_GL3@")
+
+if(FEBUNDLE_WITH_IMGUI AND FEBUNDLE_IMGUI_SDL3_GL3)
+  find_dependency(OpenGL)
+  find_dependency(SDL3)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/FeBundleTargets.cmake")
