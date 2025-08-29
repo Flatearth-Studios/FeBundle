@@ -31,6 +31,8 @@ string tagToString(Tag tag) noexcept {
   switch (tag) {
   case Tag::Application:
     return "Application";
+  case Tag::Renderer:
+    return "Renderer";
   default:
     return "Unknown";
   }

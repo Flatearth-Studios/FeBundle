@@ -21,11 +21,21 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Logger.hpp
     include/FeBundle/Core/Defines.hpp
     include/FeBundle/Core/Memory/Memory.hpp
+    include/FeBundle/Core/Window/Window.hpp
+    include/FeBundle/Core/Renderer/Renderer.hpp
+    include/FeBundle/Core/Clock.hpp
+    include/FeBundle/Core/GameTypes.hpp
+    include/FeBundle/Core/Entrypoint.hpp
+    include/FeBundle/Core/Application.hpp
 )
 
 # ---- Sources (only used when compiled) ----
 set(FEBUNDLE_SOURCES
     src/Core/Memory/Memory.cc
+    src/Core/Window/Window.cc
+    src/Core/Renderer/Renderer.cc
+    src/Core/Clock.cc
+    src/Core/Application.cc
 )
 
 if(FEBUNDLE_COMPILED)

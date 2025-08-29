@@ -3,5 +3,6 @@
 
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Logger.hpp"
+#include "FeBundle/Core/Memory/Memory.hpp"
 
 #endif // INCLUDE_FEBUNDLE_HPP_

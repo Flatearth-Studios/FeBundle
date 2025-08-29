@@ -56,4 +56,52 @@ using atomic_bool = std::atomic<bool>;
 
 #define NODISCARD [[nodiscard]]
 
+#if defined(_MSVC_LANG)
+#define STATIC_ASSERT static_assert
+#elif defined(__cplusplus) && __cplusplus >= 201703L
+#define STATIC_ASSERT static_assert
+#else
+#error "C++17 or newer needed to proceed"
+#endif
+
+#ifdef FEXPORT
+// Exports
+#ifdef _MSC_VER
+#define FEAPI __declspec(dllexport)
+#else
+#define FEAPI __attribute__((visibility("default")))
+#endif
+#else
+// Imports
+#ifdef _MSC_VER
+#define FEAPI __declspec(dllimport)
+#else
+#define FEAPI
+#endif
+#endif
+
+#ifndef _DEBUG
+// Set to false if in release
+#define _DEBUG true 
+#endif
+
+static constexpr float64 FE_PI = 3.14159265358979323846f;
+static constexpr float64 FE_2_PI = 2 * FE_PI;
+static constexpr float64 FE_HALF_PI = FE_PI / 2.0f;
+static constexpr float64 FE_QUARTER_PI = FE_PI / 4.0f;
+static constexpr float64 FE_1_OVER_PI = 1 / FE_PI;
+static constexpr float64 FE_1_OVER_2_PI = 1 / FE_2_PI;
+static constexpr float64 FE_SQRT_2 = 1.41421356237309504880f;
+static constexpr float64 FE_SQRT_3 = 1.73205080756887729352f;
+static constexpr float64 FE_1_OVER_SQRT_2 = 0.70710678118654752440f;
+static constexpr float64 FE_1_OVER_SQRT_3 = 0.57735026918962576450f;
+static constexpr float64 FE_DEG_TO_RAD_MUL = FE_PI / 180.0f;
+static constexpr float64 FE_RAD_TO_DEG_MUL = 180.0f / FE_PI;
+
+static constexpr float64 FE_MS_TO_SEC_MUL = 1 / 1000.0f;
+static constexpr float64 FE_SEC_TO_MS_MUL = 1000.0f;
+
+static constexpr float64 FE_F64MAX = 1e30f;
+static constexpr float64 FE_F64EPS = 1.192092896e-7f;
+
 #endif // INCLUDE_FEBUNDLE_CORE_DEFINES_HPP_

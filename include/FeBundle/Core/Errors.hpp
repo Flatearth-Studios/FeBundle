@@ -7,6 +7,9 @@ enum class ErrorName {
   Null,
   BadAllocation,
   AllocationException,
+  CreateWindow,
+  CreateRenderer,
+  RenderCall,
 };
 
 enum class ErrorType {
