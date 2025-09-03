@@ -5,6 +5,8 @@ build/*
 compile_commands.json
 log.txt
 imgui.ini
-extern/imgui/examples/
+CMakeSettings.json
+out/*
+extern/imgui/examples/*
 extern/imgui/examples/**/*.vcxproj
 extern/imgui/examples/**/*.vcxproj*

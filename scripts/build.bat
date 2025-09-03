@@ -1,64 +1,50 @@
 @echo off
-setlocal ENABLEDELAYEDEXECUTION
+setlocal
 
-:: ---------------------------
-:: FeBundle Visual Studio build
-:: ---------------------------
-:: Usage examples:
-::   build_vs.bat
-::   build_vs.bat Release x64 C:\SDKs\FeBundle on off
-:: Args:
-::   %1 = CONFIG        (Debug|Release|RelWithDebInfo|MinSizeRel) [default: Release]
-::   %2 = ARCH          (x64|Win32|ARM64)                         [default: x64]
-::   %3 = INSTALL_PREFIX (path)                                   [default: "C:\Program Files\FeBundle"]
-::   %4 = FEBUNDLE_COMPILED (on|off)                              [default: off]
-::   %5 = FEBUNDLE_BUILD_SHARED (on|off)                          [default: off]
+:: ========================
+:: Configuration
+:: ========================
+set BUILD_DIR=build
+set BUILD_TYPE=Debug
 
-set CFG=%~1
-if "%CFG%"=="" set CFG=Release
+:: Clean build dir if exists
+if exist %BUILD_DIR% (
+    echo [Clean] Removing old build dir...
+    rmdir /s /q %BUILD_DIR%
+)
 
-set ARCH=%~2
-if "%ARCH%"=="" set ARCH=x64
+mkdir %BUILD_DIR%
+cd %BUILD_DIR%
 
-set PREFIX=%~3
-if "%PREFIX%"=="" set PREFIX=C:\Program Files\FeBundle
+:: ========================
+:: Step 1: Run the exact working CMake command
+:: ========================
+echo [CMake] Configuring project...
+cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 ^
+  -DFEBUNDLE_COMPILED=ON ^
+  -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
+  -DVCPKG_TARGET_TRIPLET=x64-windows ^
+  -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
 
-set COMPILED=%~4
-if /I "%COMPILED%"=="" set COMPILED=off
+if %errorlevel% neq 0 (
+    echo [ERROR] CMake configure failed!
+    exit /b %errorlevel%
+)
 
-set SHARED=%~5
-if /I "%SHARED%"=="" set SHARED=off
+:: ========================
+:: Step 2: Build the solution
+:: ========================
+echo [CMake] Building %BUILD_TYPE%...
+cmake --build . --config %BUILD_TYPE%
 
-set GEN=Visual Studio 17 2022
+if %errorlevel% neq 0 (
+    echo [ERROR] Build failed!
+    exit /b %errorlevel%
+)
 
-echo.
-echo ==== FeBundle - Configure (%GEN%, %ARCH%, %CFG%) ====
-if exist build rmdir /S /Q build
-mkdir build || goto :error
-
-cmake -S . -B build -G "%GEN%" -A %ARCH% ^
-  -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF ^
-  -DFEBUNDLE_COMPILED=%COMPILED% ^
-  -DFEBUNDLE_BUILD_SHARED=%SHARED% ^
-  -DCMAKE_INSTALL_PREFIX="%PREFIX%"
-
-IF ERRORLEVEL 1 goto :error
-
-echo.
-echo ==== Build ====
-cmake --build build --config %CFG%
-IF ERRORLEVEL 1 goto :error
-
-echo.
-echo ==== Install to %PREFIX% ====
-cmake --install build --config %CFG%
-IF ERRORLEVEL 1 goto :error
-
-echo.
-echo ✓ Done.
-goto :eof
-
-:error
-echo.
-echo ✗ Build failed (errorlevel %ERRORLEVEL%).
-exit /b %ERRORLEVEL%
+:: ========================
+:: Done
+:: ========================
+echo [SUCCESS] FeBundle built successfully.
+cd ..
+endlocal
