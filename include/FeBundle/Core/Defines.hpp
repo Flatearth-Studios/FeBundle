@@ -58,12 +58,13 @@ using atomic_bool = std::atomic<bool>;
 
 #if defined(_MSVC_LANG)
 #define STATIC_ASSERT static_assert
-#elif defined(__cplusplus) && __cplusplus >= 201703L
+#elif defined(__cplusplus) && __cplusplus >= 202303L
 #define STATIC_ASSERT static_assert
 #else
 #error "C++17 or newer needed to proceed"
 #endif
 
+#define FEXPORT
 #ifdef FEXPORT
 // Exports
 #ifdef _MSC_VER

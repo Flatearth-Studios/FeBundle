@@ -18,7 +18,7 @@ Window::~Window() { cleanup(); }
 std::expected<void, Error> Window::Init() {
   if (_pWindow != nullptr || _initialized) {
     FLOG_WARN("attempt to initialize an window that is already initialized");
-    return {};
+    return std::unexpected{ Error(ErrorName::CreateWindow) };
   }
   SDL_Init(SDL_INIT_VIDEO);
 

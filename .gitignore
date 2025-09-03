@@ -1,4 +1,10 @@
+.vs/*
 .cache/*
 .git/*
 build/*
 compile_commands.json
+log.txt
+imgui.ini
+extern/imgui/examples/
+extern/imgui/examples/**/*.vcxproj
+extern/imgui/examples/**/*.vcxproj*

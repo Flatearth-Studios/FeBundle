@@ -31,7 +31,7 @@ private:
 private:
   bool _shouldClose{false};
   WindowSpecs _specs;
-  SDL_Window *_pWindow;
+  SDL_Window *_pWindow = nullptr;
 
   bool _initialized{false};
 };

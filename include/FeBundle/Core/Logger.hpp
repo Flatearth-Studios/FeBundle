@@ -19,13 +19,14 @@
 
 namespace bb::core {
 
-static constexpr string COLOR_GREY = "\x1b[90m";
-static constexpr string COLOR_BLUE = "\x1b[34m";
-static constexpr string COLOR_GREEN = "\x1b[32m";
-static constexpr string COLOR_YELLOW = "\x1b[33m";
-static constexpr string COLOR_RED = "\x1b[31m";
-static constexpr string COLOR_FATAL = "\x1b[41;97m";
-static constexpr string COLOR_RESET = "\x1b[0m";
+    inline const char* COLOR_GREY = "\x1b[90m";
+    inline const char* COLOR_BLUE = "\x1b[34m";
+    inline const char* COLOR_GREEN = "\x1b[32m";
+    inline const char* COLOR_YELLOW = "\x1b[33m";
+    inline const char* COLOR_RED = "\x1b[31m";
+    inline const char* COLOR_FATAL = "\x1b[41;97m";
+    inline const char* COLOR_RESET = "\x1b[0m";
+
 
 
 enum class LogLevel {
@@ -172,7 +173,7 @@ private:
     std::lock_guard<std::mutex> guard(_mutex);
     auto payload = std::vformat(fmt, std::make_format_args(args...));
     const char *color = LevelColour(level);
-    const char *reset = COLOR_RESET.c_str();
+    const char *reset = COLOR_RESET;
     const char *lvlStr = toString(level);
     const char *full = where.file_name();
     const char *p = std::strstr(full, "src/");
@@ -201,7 +202,7 @@ private:
   inline void pushToQ(LogMessage msg) {
     _logQ.push(std::move(msg));
     _cv.notify_one();
-  }
+  } 
 
   inline constexpr const char *toString(LogLevel lvl) const {
     switch (lvl) {
@@ -228,20 +229,20 @@ private:
   inline constexpr const char *LevelColour(LogLevel lvl) {
     switch (lvl) {
     case LogLevel::Trace:
-      return COLOR_GREY.c_str();
+      return COLOR_GREEN;
     case LogLevel::Debug:
-      return COLOR_BLUE.c_str();
+      return COLOR_BLUE;
     case LogLevel::Info:
-      return COLOR_GREEN.c_str();
+      return COLOR_GREEN;
       ;
     case LogLevel::Warn:
-      return COLOR_YELLOW.c_str();
+      return COLOR_YELLOW;
     case LogLevel::Error:
-      return COLOR_RED.c_str();
+      return COLOR_RED;
     case LogLevel::Fatal:
-      return COLOR_FATAL.c_str(); // red bg, white text
+      return COLOR_FATAL; // red bg, white text
     default:
-      return COLOR_RESET.c_str();
+      return COLOR_RESET;
     }
   }
 

@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ---- Options ----
-option(FEBUNDLE_COMPILED "Build FeBundle as a compiled library (not header-only)" OFF)
+option(FEBUNDLE_COMPILED "Build FeBundle as a compiled library (not header-only)" ON)
 option(FEBUNDLE_BUILD_SHARED "If compiled, build as shared (otherwise static)" OFF)
 option(FEBUNDLE_CCDB "Generate a TU for compile_commands.json in header-only mode" ON)
 option(FEBUNDLE_WITH_IMGUI "Enable Dear ImGui integration" ON)
@@ -109,9 +109,10 @@ if(FEBUNDLE_WITH_IMGUI)
   )
 
   # SDL3 is required for these backends
-  find_package(SDL3 REQUIRED)
-  find_package(SDL3_image REQUIRED)
+  find_package(SDL3 CONFIG REQUIRED)
+  find_package(SDL3_image CONFIG REQUIRED)
   target_link_libraries(imgui PUBLIC SDL3::SDL3)
+
 
   # Link ImGui to FeBundle PUBLIC so consumers get it on their link line
   if(TARGET fe_bundle)
@@ -165,3 +166,7 @@ install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/FeBundleConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FeBundle
 )
+ 
+target_link_libraries(fe_bundle PUBLIC SDL3::SDL3 SDL3_image::SDL3_image)
+
+add_subdirectory(testbed)
