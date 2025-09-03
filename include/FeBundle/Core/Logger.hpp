@@ -60,6 +60,9 @@ public:
 
   inline void EnableFileLogging(bool enable) {
     if (enable) {
+      if (_logToFile) {
+        return;
+      }
       _logFile.open(_logPath, std::ios::out | std::ios::app);
       if (!_logFile.is_open()) {
         Log(LogLevel::Error, std::source_location::current(),
@@ -178,6 +181,7 @@ private:
       p = slash ? slash + 1 : full;
     }
 
+    /*
     if (logToFile) {
       const auto now = std::chrono::system_clock::now();
       std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
@@ -187,6 +191,7 @@ private:
                          lvlStr, p, where.line(), where.function_name(),
                          payload);
     }
+    */
 
     return std::format("{}[{}] {}:{} in function {}'{}'{}: {}{}\n", color,
                        lvlStr, p, where.line(), reset, where.function_name(),

@@ -103,7 +103,7 @@ void *MemoryManager::Alloc(std::size_t n, Tag tag, std::size_t align) noexcept {
 
 void MemoryManager::Free(void *p, std::size_t n, Tag tag) noexcept {
   if (!p) {
-    LOG_WARN("attempt to free invalid memory address of nullptr");
+    FLOG_WARN("attempt to free invalid memory address of nullptr");
     return;
   }
 

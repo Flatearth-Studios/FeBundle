@@ -25,7 +25,7 @@ void AssetManager::unloadAll(SDL_Renderer *renderer) {
 
     auto texture = loadTexture(renderer, tex);
     if (texture == nullptr) {
-      LOG_WARN("loaded texture '{}' is a nullptr", tex);
+      FLOG_WARN("loaded texture '{}' is a nullptr", tex);
     }
   }
 }
@@ -52,7 +52,7 @@ SDL_Texture *AssetManager::loadTexture(SDL_Renderer *renderer,
 
   SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
   if (!texture) {
-    SDL_Log("Failed to load texture %s: %s", path.c_str(), SDL_GetError());
+    FLOG_ERROR("Failed to load texture {}: {}", path.c_str(), SDL_GetError());
     return nullptr;
   }
 

@@ -9,7 +9,7 @@ namespace febundle::window {
 
 Window::Window(const WindowSpecs &specs) : _specs(specs) {
   if (_specs.width == 0 || _specs.height == 0) {
-    LOG_WARN("zero width/height on WindowSpecs");
+    FLOG_WARN("zero width/height on WindowSpecs");
   }
 }
 
@@ -17,7 +17,7 @@ Window::~Window() { cleanup(); }
 
 std::expected<void, Error> Window::Init() {
   if (_pWindow != nullptr || _initialized) {
-    LOG_WARN("attempt to initialize an window that is already initialized");
+    FLOG_WARN("attempt to initialize an window that is already initialized");
     return {};
   }
   SDL_Init(SDL_INIT_VIDEO);
@@ -27,12 +27,12 @@ std::expected<void, Error> Window::Init() {
 
   if (_pWindow == nullptr) {
     // Failed to create the window
-    LOG_ERROR("failed to create window: {}", SDL_GetError());
+    FLOG_ERROR("failed to create window: {}", SDL_GetError());
     return std::unexpected{Error(ErrorName::CreateWindow)};
   }
 
-  LOG_INFO("window initialized successfully");
-  LOG_INFO("Specs {}x{}", _specs.width, _specs.height);
+  FLOG_INFO("window initialized successfully");
+  FLOG_INFO("Specs {}x{}", _specs.width, _specs.height);
   _initialized = true;
   return {};
 }
@@ -70,7 +70,7 @@ void Window::ProcessEvent(const SDL_Event &event) {
   if (resized && (newW != _specs.width || newH != _specs.height)) {
     _specs.width = newW;
     _specs.height = newH;
-    LOG_TRACE("resizing...");
+    FLOG_TRACE("resizing...");
   }
 }
 

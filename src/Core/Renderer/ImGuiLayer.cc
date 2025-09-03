@@ -11,7 +11,7 @@ namespace febundle::renderer {
 std::expected<void, Error> ImGuiLayer::Init(SDL_Window *window,
                                             SDL_Renderer *renderer) {
   if (_initialized) {
-    LOG_WARN("ImGuiLayer already initialized");
+    FLOG_WARN("ImGuiLayer already initialized");
     return {};
   }
 
@@ -27,12 +27,12 @@ std::expected<void, Error> ImGuiLayer::Init(SDL_Window *window,
   io.Fonts->AddFontDefault();
 
   if (!ImGui_ImplSDL3_InitForSDLRenderer(window, renderer)) {
-    LOG_ERROR("failed to initialized SDL3 ImGui bridge");
+    FLOG_ERROR("failed to initialized SDL3 ImGui bridge");
     return std::unexpected{Error(ErrorName::ImGuiBackendInit)};
   }
 
   if (!ImGui_ImplSDLRenderer3_Init(renderer)) {
-    LOG_ERROR("failed to initialize SDLRenderer3 ImGui bridge");
+    FLOG_ERROR("failed to initialize SDLRenderer3 ImGui bridge");
     return std::unexpected{Error(ErrorName::ImGuiBackendInit)};
   }
 
@@ -43,7 +43,7 @@ std::expected<void, Error> ImGuiLayer::Init(SDL_Window *window,
 
 void ImGuiLayer::BeginFrame() {
   if (!_initialized) {
-    LOG_WARN("cannot begin frame on unintialized ImGui layer");
+    FLOG_WARN("cannot begin frame on unintialized ImGui layer");
     return;
   }
 
@@ -54,7 +54,7 @@ void ImGuiLayer::BeginFrame() {
 
 void ImGuiLayer::Render() {
   if (!_initialized || _pRenderer == nullptr) {
-    LOG_WARN("attempt to render ImGui layer but either no renderer exists or "
+    FLOG_WARN("attempt to render ImGui layer but either no renderer exists or "
              "layer is not initialized");
     return;
   }
@@ -69,7 +69,7 @@ void ImGuiLayer::Render() {
 
 void ImGuiLayer::Shutdown() {
   if (!_initialized) {
-    LOG_WARN("cannot shutdown unitialized ImGui layer");
+    FLOG_WARN("cannot shutdown unitialized ImGui layer");
     return;
   }
 }

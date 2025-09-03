@@ -23,14 +23,14 @@ FeRenderer::~FeRenderer() { cleanup(); }
 
 std::expected<void, Error> FeRenderer::Init() {
   if (_sInitialized) {
-    LOG_WARN("attempt to initialize renderer twice");
+    FLOG_WARN("attempt to initialize renderer twice");
     return {};
   }
 
   SDL_Window *window = _feWindow.Handle();
   _pRenderer = SDL_CreateRenderer(window, nullptr);
   if (_pRenderer == nullptr) {
-    LOG_ERROR("failed to create renderer: {}", SDL_GetError());
+    FLOG_ERROR("failed to create renderer: {}", SDL_GetError());
     return std::unexpected{Error(ErrorName::CreateRenderer)};
   }
 
@@ -38,18 +38,18 @@ std::expected<void, Error> FeRenderer::Init() {
   SDL_SetRenderDrawBlendMode(_pRenderer, SDL_BLENDMODE_BLEND);
   _assetMgr.unloadAll(_pRenderer);
   _texturesLoaded = _assetMgr.TextureQty();
-  LOG_INFO("renderer initialized successfully");
+  FLOG_INFO("renderer initialized successfully");
   return {};
 }
 
 std::expected<void, Error> FeRenderer::Render() {
   if (_pRenderer == nullptr) {
-    LOG_ERROR("attempt to render on nullptr");
+    FLOG_ERROR("attempt to render on nullptr");
     return std::unexpected{Error(ErrorName::RenderCall)};
   }
 
   if (_cpScene == nullptr) {
-    LOG_WARN("no scene to render");
+    FLOG_WARN("no scene to render");
     return {};
   }
 
@@ -62,7 +62,7 @@ std::expected<void, Error> FeRenderer::Render() {
   const auto transforms = _cpScene->Transforms().Data();
 
   if (sprites.size() != transforms.size()) {
-    LOG_ERROR("sprites and transforms do not share the same size "
+    FLOG_ERROR("sprites and transforms do not share the same size "
               "sprites size: {}; transforms size: {}",
               sprites.size(), transforms.size());
     return std::unexpected{Error(ErrorName::RenderSprites)};
@@ -70,7 +70,7 @@ std::expected<void, Error> FeRenderer::Render() {
 
   for (std::size_t i = 0; i < sprites.size(); i++) {
     if (!renderSprite(transforms[i], sprites[i])) {
-      LOG_WARN("renderer failed to render sprite with id {}", sprites[i].id);
+      FLOG_WARN("renderer failed to render sprite with id {}", sprites[i].id);
     }
   }
 

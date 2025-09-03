@@ -16,11 +16,13 @@ App::App(Game *gameInstance)
                                memory::Tag::Renderer, _feWindow,
                                gameInstance->assetMgr))
                      .value()) {
+
+  ENABLE_FILE_LOGGING(true);
   _appState.gameInstance = gameInstance;
 }
 
 App::~App() {
-  LOG_TRACE("shutting down application");
+  FLOG_TRACE("shutting down application");
   if (_pImguiLayer != nullptr) {
     _pImguiLayer->Shutdown();
     _pImguiLayer.reset();
@@ -29,17 +31,17 @@ App::~App() {
 
 std::expected<void, Error> App::Init() {
   if (auto res = _feWindow.Init(); !res.has_value()) {
-    LOG_ERROR("failed to initialize window");
+    FLOG_ERROR("failed to initialize window");
     return std::unexpected{res.error()};
   }
 
   if (!_appState.gameInstance->Initialize(*_appState.gameInstance)) {
-    LOG_ERROR("could not initialize game instance");
+    FLOG_ERROR("could not initialize game instance");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
 
   if (auto res = _pRenderer->Init(); !res.has_value()) {
-    LOG_ERROR("failed to initialize renderer");
+    FLOG_ERROR("failed to initialize renderer");
     return std::unexpected{res.error()};
   }
   // Sets the scene for the renderer to render
@@ -49,18 +51,18 @@ std::expected<void, Error> App::Init() {
       MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
   if (!res.has_value()) {
-    LOG_WARN("failed to initialize ImGui layer");
+    FLOG_WARN("failed to initialize ImGui layer");
   }
 
   _appState.width = _appState.gameInstance->windowSpecs.width;
   _appState.height = _appState.gameInstance->windowSpecs.height;
   _appState.clock.Start();
-  LOG_INFO("application initialized successfully");
+  FLOG_INFO("application initialized successfully");
   return {};
 }
 
 std::expected<void, Error> App::Run() {
-  LOG_TRACE("starting application");
+  FLOG_TRACE("starting application");
 
   _appState.clock.Update();
   _appState.lastTime = _appState.clock.elapsed;
@@ -77,12 +79,12 @@ std::expected<void, Error> App::Run() {
     _appState.lastTime = now;
 
     if (!_appState.gameInstance->Update(*_appState.gameInstance, deltaTime)) {
-      LOG_ERROR("game failed to update");
+      FLOG_ERROR("game failed to update");
       break;
     }
 
     if (auto res = checkAndResizeWindow(); !res.has_value()) {
-      LOG_ERROR("failed to resize window");
+      FLOG_ERROR("failed to resize window");
       return std::unexpected{res.error()};
     }
 
@@ -90,7 +92,7 @@ std::expected<void, Error> App::Run() {
     _pImguiLayer->BeginFrame();
 
     if (auto res = _pRenderer->Render(); !res.has_value()) {
-      LOG_ERROR("renderer failed to render scene");
+      FLOG_ERROR("renderer failed to render scene");
       return std::unexpected{res.error()};
     }
 
@@ -116,7 +118,7 @@ std::expected<void, Error> App::checkAndResizeWindow() {
   if (resized &&
       !_appState.gameInstance->OnResize(*_appState.gameInstance,
                                         _appState.width, _appState.height)) {
-    LOG_ERROR("game failed to resize");
+    FLOG_ERROR("game failed to resize");
     return std::unexpected{Error(ErrorName::ResizeWindow)};
   }
 
