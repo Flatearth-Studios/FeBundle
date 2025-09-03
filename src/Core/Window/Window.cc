@@ -1,3 +1,4 @@
+#define FE_DEBUG
 #include "FeBundle/Core/Window/Window.hpp"
 #include "FeBundle/Core/Logger.hpp"
 #include <SDL3/SDL_events.h>
@@ -7,24 +8,22 @@
 namespace febundle::window {
 
 Window::Window(const WindowSpecs &specs) : _specs(specs) {
-  if (specs.width == 0 || specs.height) {
+  if (_specs.width == 0 || _specs.height == 0) {
     LOG_WARN("zero width/height on WindowSpecs");
   }
 }
 
-Window::~Window() {
-  cleanup();
-}
+Window::~Window() { cleanup(); }
 
 std::expected<void, Error> Window::Init() {
-  if (_pWindow != nullptr) {
+  if (_pWindow != nullptr || _initialized) {
     LOG_WARN("attempt to initialize an window that is already initialized");
     return {};
   }
   SDL_Init(SDL_INIT_VIDEO);
 
   _pWindow = SDL_CreateWindow(_specs.title, _specs.width, _specs.height,
-                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
   if (_pWindow == nullptr) {
     // Failed to create the window
@@ -33,7 +32,13 @@ std::expected<void, Error> Window::Init() {
   }
 
   LOG_INFO("window initialized successfully");
+  LOG_INFO("Specs {}x{}", _specs.width, _specs.height);
+  _initialized = true;
   return {};
+}
+
+const WindowSpecs &Window::Specs() const {
+  return _specs;
 }
 
 SDL_Window *Window::Handle() const noexcept {
@@ -43,18 +48,32 @@ SDL_Window *Window::Handle() const noexcept {
   return _pWindow;
 }
 
-bool Window::ShouldClose() const noexcept {
-  return _shouldClose;
+bool Window::ShouldClose() const noexcept { return _shouldClose; }
+
+void Window::ProcessEvent(const SDL_Event &event) {
+  bool resized = false;
+  uint32 newW = 0, newH = 0;
+  switch (event.type) {
+  case SDL_EVENT_QUIT:
+    _shouldClose = true;
+    break;
+  case SDL_EVENT_WINDOW_RESIZED: {
+    resized = true; 
+    newW = static_cast<uint32>(event.window.data1);
+    newH = static_cast<uint32>(event.window.data2);
+    break;
+  }
+  default:
+    break;
+  }
+
+  if (resized && (newW != _specs.width || newH != _specs.height)) {
+    _specs.width = newW;
+    _specs.height = newH;
+    LOG_TRACE("resizing...");
+  }
 }
 
-void Window::PollEvents() {
-  while (SDL_PollEvent(&_event)) {
-    if (_event.type == SDL_EVENT_QUIT) {
-      _shouldClose = true;
-      break;
-    }
-  } 
-}
 
 void Window::cleanup() {
   _shouldClose = true;
@@ -65,6 +84,7 @@ void Window::cleanup() {
   SDL_DestroyWindow(_pWindow);
   SDL_Quit();
   _pWindow = nullptr;
+  _initialized = false;
 }
 
 } // namespace febundle::window

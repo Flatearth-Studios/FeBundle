@@ -259,32 +259,7 @@ private:
 } // namespace bb::core
 
 // —————— macros ——————
-#ifdef NDEBUG
-#define LOG_TRACE(...)                                                         \
-  do {                                                                         \
-  } while (0)
-#define LOG_DEBUG(...)                                                         \
-  do {                                                                         \
-  } while (0)
-#define LOG_INFO(...)                                                          \
-  do {                                                                         \
-  } while (0)
-#define LOG_WARN(...)                                                          \
-  do {                                                                         \
-  } while (0)
-#define FLOG_TRACE(...)                                                        \
-  do {                                                                         \
-  } while (0)
-#define FLOG_DEBUG(...)                                                        \
-  do {                                                                         \
-  } while (0)
-#define FLOG_INFO(...)                                                         \
-  do {                                                                         \
-  } while (0)
-#define FLOG_WARN(...)                                                         \
-  do {                                                                         \
-  } while (0)
-#else
+#ifdef FE_DEBUG 
 #define LOG_TRACE(fmt, ...)                                                    \
   bb::core::Logger::Self().Log(bb::core::LogLevel::Trace,                      \
                                std::source_location::current(), fmt,           \
@@ -319,6 +294,31 @@ private:
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 
+#else
+#define LOG_TRACE(...)                                                         \
+  do {                                                                         \
+  } while (0)
+#define LOG_DEBUG(...)                                                         \
+  do {                                                                         \
+  } while (0)
+#define LOG_INFO(...)                                                          \
+  do {                                                                         \
+  } while (0)
+#define LOG_WARN(...)                                                          \
+  do {                                                                         \
+  } while (0)
+#define FLOG_TRACE(...)                                                        \
+  do {                                                                         \
+  } while (0)
+#define FLOG_DEBUG(...)                                                        \
+  do {                                                                         \
+  } while (0)
+#define FLOG_INFO(...)                                                         \
+  do {                                                                         \
+  } while (0)
+#define FLOG_WARN(...)                                                         \
+  do {                                                                         \
+  } while (0)
 #endif
 
 #define LOG_ERROR(fmt, ...)                                                    \

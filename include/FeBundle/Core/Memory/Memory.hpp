@@ -57,24 +57,27 @@ template <typename T> struct Deleter {
 };
 
 template <typename Base, typename Derived, typename... Args>
-  requires std::derived_from<Derived, Base> && std::is_constructible_v<Derived, Args...>
+  requires std::derived_from<Derived, Base> &&
+           std::is_constructible_v<Derived, Args...>
 NODISCARD std::expected<std::unique_ptr<Base, PolyDeleter<Base>>, Error>
-MakeUniquePoly(Tag tag, Args&&... args) {
+MakeUniquePoly(Tag tag, Args &&...args) {
   if (tag == Tag::Unknown) {
     LOG_WARN("Allocating memory with tag 'Unknown'");
   }
 
-  void* raw = MemoryManager::Self().Alloc(sizeof(Derived), tag, alignof(Derived));
-  if (!raw) return std::unexpected{Error(ErrorName::BadAllocation)};
+  void *raw =
+      MemoryManager::Self().Alloc(sizeof(Derived), tag, alignof(Derived));
+  if (!raw)
+    return std::unexpected{Error(ErrorName::BadAllocation)};
 
   try {
-    auto* obj = new (raw) Derived(std::forward<Args>(args)...);
+    auto *obj = new (raw) Derived(std::forward<Args>(args)...);
     PolyDeleter<Base> del{
-      .tag = tag,
-      .size = sizeof(Derived),
-      .destroy = [](Base* p) { static_cast<Derived*>(p)->~Derived(); }
-    };
-    return std::unique_ptr<Base, PolyDeleter<Base>>(static_cast<Base*>(obj), del);
+        .tag = tag, .size = sizeof(Derived), .destroy = [](Base *p) {
+          static_cast<Derived *>(p)->~Derived();
+        }};
+    return std::unique_ptr<Base, PolyDeleter<Base>>(static_cast<Base *>(obj),
+                                                    del);
   } catch (...) {
     MemoryManager::Self().Free(raw, sizeof(Derived), tag);
     return std::unexpected{Error(ErrorName::AllocationException)};

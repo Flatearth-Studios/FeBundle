@@ -7,7 +7,7 @@
 namespace febundle::window {
 
 struct WindowSpecs {
-  uint32 width{}, height{};
+  uint32 width{960}, height{1280};
   const char *title;
 
   WindowSpecs() = default;
@@ -20,18 +20,20 @@ public:
   Window(const WindowSpecs &specs);
   ~Window();
   std::expected<void, Error> Init();
+  const WindowSpecs &Specs() const;
   SDL_Window *Handle() const noexcept;
   bool ShouldClose() const noexcept;
-  void PollEvents();
+  void ProcessEvent(const SDL_Event &event);
 
 private:
   void cleanup();
 
 private:
   bool _shouldClose{false};
-  SDL_Event _event;
   WindowSpecs _specs;
   SDL_Window *_pWindow;
+
+  bool _initialized{false};
 };
 
 }

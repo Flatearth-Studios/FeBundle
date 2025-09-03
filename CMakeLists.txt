@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(FeBundle VERSION 1.0.0 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 # ---- Global C++23 + tooling ----
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,6 +25,12 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Memory/Memory.hpp
     include/FeBundle/Core/Window/Window.hpp
     include/FeBundle/Core/Renderer/Renderer.hpp
+    include/FeBundle/Core/Renderer/ImGuiLayer.hpp
+    include/FeBundle/Core/Scene/Entity.hpp
+    include/FeBundle/Core/Scene/Components.hpp
+    include/FeBundle/Core/Scene/Store.hpp
+    include/FeBundle/Core/Scene/Scene.hpp
+    include/FeBundle/Core/Systems/AssetManager.hpp
     include/FeBundle/Core/Clock.hpp
     include/FeBundle/Core/GameTypes.hpp
     include/FeBundle/Core/Entrypoint.hpp
@@ -34,6 +42,9 @@ set(FEBUNDLE_SOURCES
     src/Core/Memory/Memory.cc
     src/Core/Window/Window.cc
     src/Core/Renderer/Renderer.cc
+    src/Core/Renderer/ImGuiLayer.cc
+    src/Core/Scene/Scene.cc
+    src/Core/Systems/AssetManager.cc
     src/Core/Clock.cc
     src/Core/Application.cc
 )
@@ -65,6 +76,10 @@ else()
   )
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(fe_bundle PUBLIC FE_DEBUG)
+endif()
+
 if(FEBUNDLE_WITH_IMGUI)
   set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/imgui)
 
@@ -78,13 +93,11 @@ if(FEBUNDLE_WITH_IMGUI)
     list(APPEND IMGUI_SOURCES ${IMGUI_DIR}/imgui_demo.cpp)
   endif()
 
-  set(IMGUI_BACKENDS)
-  if(FEBUNDLE_IMGUI_SDL3_GL3)
-    list(APPEND IMGUI_BACKENDS
-      ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-      ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-    )
-  endif()
+  # --- Backends: use SDL3 + SDLRenderer3 (this matches your code) ---
+  set(IMGUI_BACKENDS
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
+  )
 
   add_library(imgui STATIC ${IMGUI_SOURCES} ${IMGUI_BACKENDS})
   target_compile_features(imgui PUBLIC cxx_std_23)
@@ -95,41 +108,21 @@ if(FEBUNDLE_WITH_IMGUI)
     $<INSTALL_INTERFACE:include/FeBundle/3rdparty/imgui/backends>
   )
 
-  # Backend deps (optional)
-  if(FEBUNDLE_IMGUI_SDL3_GL3)
-    find_package(OpenGL QUIET)
-    if(OpenGL_FOUND)
-        target_link_libraries(imgui PUBLIC OpenGL::GL)
-    elseif(WIN32)
-        target_link_libraries(imgui PUBLIC opengl32)
-    endif()
-    find_package(SDL3 QUIET)  # Requires an SDL3 CMake package if present
-    if(SDL3_FOUND)
-        target_link_libraries(imgui PUBLIC SDL3::SDL3)
-    else()
-      message(STATUS "SDL3 not found; provide it in apps that use the SDL3 backend.")
-    endif()
-  endif()
+  # SDL3 is required for these backends
+  find_package(SDL3 REQUIRED)
+  find_package(SDL3_image REQUIRED)
+  target_link_libraries(imgui PUBLIC SDL3::SDL3)
 
-  # Link ImGui to FeBundle
+  # Link ImGui to FeBundle PUBLIC so consumers get it on their link line
   if(TARGET fe_bundle)
-    if(FEBUNDLE_COMPILED)
-      # FeBundle uses ImGui in .cc files → PRIVATE (make PUBLIC if public headers expose <imgui.h>)
-      target_link_libraries(fe_bundle PRIVATE imgui)
-    else()
-      # Header-only FeBundle: only INTERFACE if headers include <imgui.h>
-      # target_link_libraries(fe_bundle INTERFACE imgui)
-    endif()
+    target_link_libraries(fe_bundle PUBLIC imgui)
   endif()
 
-  # Install the imgui target (so consumers get it via FeBundleTargets)
   install(TARGETS imgui EXPORT FeBundleTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
-
-  # Install ImGui headers into a stable include path used by INSTALL_INTERFACE
   install(DIRECTORY ${IMGUI_DIR}/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FeBundle/3rdparty/imgui
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
@@ -142,7 +135,6 @@ endif()
 add_library(FeBundle::fe_bundle ALIAS fe_bundle)
 
 # ---- Install & package config ----
-include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 install(TARGETS fe_bundle

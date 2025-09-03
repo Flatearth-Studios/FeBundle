@@ -10,6 +10,11 @@ enum class ErrorName {
   CreateWindow,
   CreateRenderer,
   RenderCall,
+  RenderSprites,
+  ImGuiBackendInit,
+  InitializeGameCallback,
+  NullReference,
+  ResizeWindow,
 };
 
 enum class ErrorType {

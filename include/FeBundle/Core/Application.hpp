@@ -2,15 +2,18 @@
 #define INCLUDE_FEBUNDLE_CORE_APPLICATION_HPP_
 
 #include "Clock.hpp"
+#include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "Renderer/Renderer.hpp"
 #include "GameTypes.hpp"
 #include "Memory/Memory.hpp"
 
 namespace febundle {
 
-using RendererPtr = std::unique_ptr<renderer::IRenderer,
-                                    memory::PolyDeleter<renderer::IRenderer>>;
+using RendererPtr = std::unique_ptr<renderer::FeRenderer,
+                                    memory::Deleter<renderer::FeRenderer>>;
 
+using ImGuiPtr = std::unique_ptr<renderer::ImGuiLayer, 
+                                    memory::Deleter<renderer::ImGuiLayer>>;
 
 struct ApplicationState {
   Game *gameInstance;
@@ -25,12 +28,18 @@ struct ApplicationState {
 class App {
 public:
   FEAPI App(Game *gameInstance);
+  FEAPI ~App();
   FEAPI std::expected<void, Error> Init();
   FEAPI std::expected<void, Error> Run();
 
 private:
+  std::expected<void, Error> checkAndResizeWindow();
+
+private:
   static ApplicationState _appState;
   RendererPtr _pRenderer;
+  ImGuiPtr _pImguiLayer;
+  window::Window _feWindow;
 };
 
 } // namespace febundle

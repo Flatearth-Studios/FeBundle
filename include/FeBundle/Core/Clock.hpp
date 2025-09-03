@@ -10,6 +10,7 @@ public:
   void Start();
   void Update();
   void Stop();
+  float64 NowTime();
 
 public:
   float64 startTime, elapsed;
