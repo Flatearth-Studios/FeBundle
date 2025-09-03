@@ -58,7 +58,7 @@ using atomic_bool = std::atomic<bool>;
 
 #if defined(_MSVC_LANG)
 #define STATIC_ASSERT static_assert
-#elif defined(__cplusplus) && __cplusplus >= 202303L
+#elif defined(__cplusplus) && __cplusplus >= 202302L
 #define STATIC_ASSERT static_assert
 #else
 #error "C++17 or newer needed to proceed"
