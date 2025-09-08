@@ -12,6 +12,7 @@ namespace febundle::memory {
 enum class Tag {
   Unknown,
   Application,
+  Scene,
   Renderer,
 };
 

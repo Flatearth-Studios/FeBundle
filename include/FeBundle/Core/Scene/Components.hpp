@@ -7,7 +7,47 @@ namespace febundle::scene {
 
 using TextureHandle = uintptr_t;
 
-struct Transform {
+enum class Component {
+  Input,
+  Transform,
+  Texture,
+  Sprite,
+};
+
+struct IComponent {
+  virtual ~IComponent() = default;
+  virtual enum Component Component() const = 0;
+};
+
+struct Input : public IComponent {
+  enum Component Component() const override {
+    return type;
+  }
+
+  static constexpr enum Component type = Component::Input;
+  bool left, right, up, down;
+};
+
+struct Texture : public IComponent {
+  enum Component Component() const override {
+    return type;
+  }
+
+  static constexpr enum Component type = Component::Texture;
+  fs::path path;
+  TextureHandle texHandle;
+
+  Texture(TextureHandle tex, const string &path)
+    : path(path), texHandle(tex) {}
+};
+
+struct Transform : public IComponent {
+  enum Component Component() const override {
+    return type;
+  } 
+  
+
+  static constexpr enum Component type = Component::Transform;
   float32 x{0}, y{0}, rot{0}, sx{1}, sy{1};
 
   Transform() {}
@@ -15,15 +55,19 @@ struct Transform {
     : x(x), y(y) {}
 };
 
-struct Sprite {
+struct Sprite : public IComponent {
+  enum Component Component() const override {
+    return type;
+  }
+
+  static constexpr enum Component type = Component::Sprite;
   uint64 id{0};
-  TextureHandle texture{0};
   float32 width{1}, height{1};
   uint8 r{255}, g{255}, b{255}, a{255};
 
   Sprite() {}
-  Sprite(uint64 id, TextureHandle tex, float32 width, float32 height)
-    : id(id), texture(tex), width(width), height(height) {}
+  Sprite(uint64 id, float32 width, float32 height)
+    : id(id), width(width), height(height) {}
 };
 
 }

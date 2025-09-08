@@ -12,7 +12,7 @@ namespace febundle::renderer {
 
 class FeRenderer {
 public:
-  explicit FeRenderer(window::Window& feWindow, systems::AssetManager &am);
+  explicit FeRenderer(window::Window &feWindow);
   ~FeRenderer();
   std::expected<void, Error> Init();
   std::expected<void, Error> Render();
@@ -24,17 +24,19 @@ public:
 
 private:
   std::expected<void, Error> initImGui();
-  bool renderSprite(const scene::Transform &t, const scene::Sprite &s);
-  SDL_Texture *resolveTexture(scene::TextureHandle tex);
+  bool renderSprite(const scene::Transform &transform,
+                    const scene::Sprite &sprite, const scene::Texture &texture);
+  SDL_Texture *loadTexture(const scene::Texture &texture);
+  std::size_t loadTextures();
   void cleanup();
 
 private:
   SDL_Renderer *_pRenderer;
-  systems::AssetManager &_assetMgr;
   window::Window &_feWindow;
   const scene::Scene *_cpScene;
   static bool _sInitialized;
   std::size_t _texturesLoaded{0};
+  umap<scene::TextureHandle, SDL_Texture *> _mapOfpTextures;
 };
 
 } // namespace febundle::renderer

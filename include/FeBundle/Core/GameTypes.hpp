@@ -13,15 +13,12 @@ struct Game {
 
   void *pState = nullptr;
   scene::Scene scene;
-  systems::AssetManager assetMgr;
 
   std::function<bool(struct Game &)> Initialize;
   std::function<bool(struct Game &, float32)> Update;
   std::function<bool(struct Game &, uint32 width, uint32 height)> OnResize;
 
-  Game() : Initialize(nullptr), Update(nullptr), OnResize(nullptr) {
-    scene.SetAssetManager(&assetMgr);
-  }
+  Game() : Initialize(nullptr), Update(nullptr), OnResize(nullptr) {}
 };
 
 } // namespace febundle

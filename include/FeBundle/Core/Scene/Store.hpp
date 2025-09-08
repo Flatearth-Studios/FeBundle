@@ -2,6 +2,7 @@
 #define INCLUDE_FEBUNDLE_CORE_SCENE_STORE_HPP_
 
 #include "Entity.hpp"
+#include "FeBundle/Core/Logger.hpp"
 
 namespace febundle::scene {
 

@@ -30,7 +30,6 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Scene/Components.hpp
     include/FeBundle/Core/Scene/Store.hpp
     include/FeBundle/Core/Scene/Scene.hpp
-    include/FeBundle/Core/Systems/AssetManager.hpp
     include/FeBundle/Core/Clock.hpp
     include/FeBundle/Core/GameTypes.hpp
     include/FeBundle/Core/Entrypoint.hpp
@@ -44,7 +43,6 @@ set(FEBUNDLE_SOURCES
     src/Core/Renderer/Renderer.cc
     src/Core/Renderer/ImGuiLayer.cc
     src/Core/Scene/Scene.cc
-    src/Core/Systems/AssetManager.cc
     src/Core/Clock.cc
     src/Core/Application.cc
 )

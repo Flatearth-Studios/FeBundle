@@ -13,8 +13,7 @@ ApplicationState App::_appState{};
 App::App(Game *gameInstance)
     : _feWindow(gameInstance->windowSpecs),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
-                               memory::Tag::Renderer, _feWindow,
-                               gameInstance->assetMgr))
+                               memory::Tag::Renderer, _feWindow))
                      .value()) {
 
   ENABLE_FILE_LOGGING(true);
