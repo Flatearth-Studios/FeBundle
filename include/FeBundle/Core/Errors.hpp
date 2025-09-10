@@ -9,6 +9,7 @@ enum class ErrorName {
   AllocationException,
   CreateWindow,
   CreateRenderer,
+  EnableVSync,
   RenderCall,
   RenderSprites,
   ImGuiBackendInit,

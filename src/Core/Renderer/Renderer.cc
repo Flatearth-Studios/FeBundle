@@ -35,6 +35,11 @@ std::expected<void, Error> FeRenderer::Init() {
     return std::unexpected{Error(ErrorName::CreateRenderer)};
   }
 
+  if (!SDL_SetRenderVSync(_pRenderer, 1)) {
+    FLOG_ERROR("failed to eneble VSync for renderer: {}", SDL_GetError());
+    return std::unexpected{Error(ErrorName::EnableVSync)};
+  }
+
   SDL_SetRenderDrawBlendMode(_pRenderer, SDL_BLENDMODE_BLEND);
   _sInitialized = true;
   FLOG_INFO("renderer initialized successfully");

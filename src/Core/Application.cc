@@ -64,7 +64,7 @@ std::expected<void, Error> App::Run() {
   FLOG_TRACE("starting application");
 
   _appState.clock.Update();
-  _appState.lastTime = _appState.clock.elapsed;
+  _appState.lastTime = _appState.clock.NowTime();
 
   while (!_feWindow.ShouldClose()) {
     SDL_Event event;

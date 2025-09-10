@@ -27,10 +27,12 @@ std::expected<void, Error> febundle::CreateGame(Game& outGame) {
 
 	outGame.Update = [](Game& g, float32 deltaTime) -> bool {
     const auto entities = g.scene.AccessAll();
+
     for (const auto &[e, comp] : entities) {
       auto *transform = g.scene.GetComponent<scene::Transform>(e);
-      transform->x += 0.01;
-      transform->rot += 0.001;
+      transform->x += 2 * deltaTime;
+      transform->rot += 0.1 * deltaTime;
+      FLOG_TRACE("entity {} pos=({}, {}) rot={}", e, transform->x, transform->y, transform->rot);
     }
 		return true;
 	};
