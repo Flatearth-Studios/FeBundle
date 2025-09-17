@@ -65,7 +65,7 @@ std::expected<void, Error> FeRenderer::Render() {
         !components.contains(scene::Component::Transform) ||
         !components.contains(scene::Component::Texture)) {
       FLOG_WARN("entity '{}' has sprite, texture, or transform component, but "
-                "not the trio");
+                "not the trio", e);
       continue;
     }
 

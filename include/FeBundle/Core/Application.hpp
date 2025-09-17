@@ -3,6 +3,8 @@
 
 #include "Clock.hpp"
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
+#include "FeBundle/Core/Systems/CollisionSystem.hpp"
+#include "FeBundle/Core/Systems/InputManager.hpp"
 #include "Renderer/Renderer.hpp"
 #include "GameTypes.hpp"
 #include "Memory/Memory.hpp"
@@ -39,6 +41,8 @@ private:
   static ApplicationState _appState;
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;
+  systems::InputManager _inputManager;
+  systems::CollisionSystem _collisionSys;
   window::Window _feWindow;
 };
 

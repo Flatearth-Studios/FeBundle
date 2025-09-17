@@ -5,6 +5,7 @@
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Entity.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
+#include "FeBundle/Core/Systems/InputManager.hpp"
 #include <typeindex>
 
 namespace febundle::scene {
@@ -16,6 +17,7 @@ public:
   void Destroy(Entity e);
 
   const umap<Entity, uset<Component>> &AccessAll() const;
+  void ProcessInputEvent(const systems::InputEvent *ie);
 
   template <typename C> bool HasComponent(Entity e) const {
     return getStore<C>().Has(e);

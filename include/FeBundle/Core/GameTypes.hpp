@@ -1,8 +1,9 @@
 #ifndef INCLUDE_FEBUNDLE_CORE_GAME_TYPES_HPP_
 #define INCLUDE_FEBUNDLE_CORE_GAME_TYPES_HPP_
 
+#include "FeBundle/Core/Events/EventQueue.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
-#include "FeBundle/Core/Systems/AssetManager.hpp"
+#include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Window/Window.hpp"
 #include <functional>
 
@@ -13,6 +14,7 @@ struct Game {
 
   void *pState = nullptr;
   scene::Scene scene;
+  events::EventQueue<systems::CollisionEvent> collisionEventQ;
 
   std::function<bool(struct Game &)> Initialize;
   std::function<bool(struct Game &, float32)> Update;

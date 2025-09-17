@@ -1,3 +1,4 @@
+#include "FeBundle/Core/Systems/InputManager.hpp"
 #define FE_DEBUG
 #include "FeBundle/Core/Application.hpp"
 #include "FeBundle/Core/Logger.hpp"
@@ -68,15 +69,21 @@ std::expected<void, Error> App::Run() {
 
   while (!_feWindow.ShouldClose()) {
     SDL_Event event;
+    systems::InputEvent *inputEvent;
     while (SDL_PollEvent(&event)) {
       _feWindow.ProcessEvent(event);
       _pImguiLayer->ProcessEvent(event);
+      inputEvent = _inputManager.ProcessEvent(event);
+      _appState.gameInstance->scene.ProcessInputEvent(inputEvent);
     }
 
     auto now = _appState.clock.NowTime();
     float64 deltaTime = now - _appState.lastTime;
     _appState.lastTime = now;
 
+    _collisionSys.Update(_appState.gameInstance->scene,
+                         _appState.gameInstance->collisionEventQ);
+    _inputManager.Update();
     if (!_appState.gameInstance->Update(*_appState.gameInstance, deltaTime)) {
       FLOG_ERROR("game failed to update");
       break;
