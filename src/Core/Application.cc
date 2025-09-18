@@ -45,8 +45,10 @@ std::expected<void, Error> App::Init() {
     return std::unexpected{res.error()};
   }
   // Sets the scene for the renderer to render
-  _pRenderer->SetScene(&_appState.gameInstance->scene);
+  _pRenderer->SetScene(&_appState.gameInstance
+                            ->scenes[_appState.gameInstance->activeSceneIndex]);
 
+  _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
   _pImguiLayer =
       MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
@@ -74,7 +76,8 @@ std::expected<void, Error> App::Run() {
       _feWindow.ProcessEvent(event);
       _pImguiLayer->ProcessEvent(event);
       inputEvent = _inputManager.ProcessEvent(event);
-      _appState.gameInstance->scene.ProcessInputEvent(inputEvent);
+      _appState.gameInstance->scenes[_appState.gameInstance->activeSceneIndex]
+          .ProcessInputEvent(inputEvent);
     }
 
     auto now = _appState.clock.NowTime();
@@ -85,6 +88,13 @@ std::expected<void, Error> App::Run() {
     if (!_appState.gameInstance->Update(*_appState.gameInstance, deltaTime)) {
       FLOG_ERROR("game failed to update");
       break;
+    }
+
+    if (_appState.gameInstance->activeSceneIndex != _previousSceneIndex) {
+      _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
+      _pRenderer->SetScene(
+          &_appState.gameInstance->scenes[_previousSceneIndex]);
+      FLOG_INFO("Renderer rebound to scene {}", _previousSceneIndex);
     }
 
     if (auto res = checkAndResizeWindow(); !res.has_value()) {

@@ -8,18 +8,25 @@
 
 namespace febundle {
 
+const int64 MaxScenes = 300;
+
 struct Game {
   window::WindowSpecs windowSpecs;
 
   void *pState = nullptr;
-  scene::Scene scene;
+  std::vector<scene::Scene> scenes;
   systems::CollisionSystem collisionSystem;
+  std::size_t activeSceneIndex;
 
   std::function<bool(struct Game &)> Initialize;
   std::function<bool(struct Game &, float32)> Update;
   std::function<bool(struct Game &, uint32 width, uint32 height)> OnResize;
 
-  Game() : Initialize(nullptr), Update(nullptr), OnResize(nullptr) {}
+  Game()
+      : Initialize(nullptr), Update(nullptr), OnResize(nullptr),
+        activeSceneIndex(-1) {
+    scenes.reserve(MaxScenes);
+  }
 };
 
 } // namespace febundle

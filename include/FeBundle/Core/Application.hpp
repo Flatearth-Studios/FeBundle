@@ -44,6 +44,7 @@ private:
   systems::InputManager _inputManager;
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
+  std::size_t _previousSceneIndex;
 };
 
 } // namespace febundle
