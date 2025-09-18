@@ -81,8 +81,6 @@ std::expected<void, Error> App::Run() {
     float64 deltaTime = now - _appState.lastTime;
     _appState.lastTime = now;
 
-    _collisionSys.Update(_appState.gameInstance->scene,
-                         _appState.gameInstance->collisionEventQ);
     _inputManager.Update();
     if (!_appState.gameInstance->Update(*_appState.gameInstance, deltaTime)) {
       FLOG_ERROR("game failed to update");

@@ -42,8 +42,8 @@ private:
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;
   systems::InputManager _inputManager;
-  systems::CollisionSystem _collisionSys;
   window::Window _feWindow;
+  systems::CollisionSystem _collisionSys;
 };
 
 } // namespace febundle

@@ -3,6 +3,7 @@
 
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Input/Inputs.hpp"
+#include "FeBundle/Core/Math/Math.hpp"
 
 namespace febundle::scene {
 
@@ -101,6 +102,15 @@ struct Input : public IComponent {
 
   static constexpr enum Component type = Component::Input;
   umap<core::input::Key, bool> keyMap;
+};
+
+struct Kinematic : public IComponent {
+  enum Component Component() const override {
+    return type;
+  }
+  
+  static constexpr enum Component type = Component::Input;
+  math::Vec2 lastSafePos{};
 };
 
 struct Texture : public IComponent {

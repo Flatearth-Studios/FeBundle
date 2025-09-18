@@ -34,6 +34,7 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
     include/FeBundle/Core/Clock.hpp
+    include/FeBundle/Core/Math/Math.hpp
     include/FeBundle/Core/GameTypes.hpp
     include/FeBundle/Core/Entrypoint.hpp
     include/FeBundle/Core/Application.hpp
@@ -44,6 +45,7 @@ set(FEBUNDLE_SOURCES
     src/Core/Memory/Memory.cc
     src/Core/Window/Window.cc
     src/Core/Renderer/Renderer.cc
+    src/Core/Math/Math.cc
     src/Core/Renderer/ImGuiLayer.cc
     src/Core/Scene/Scene.cc
     src/Core/Systems/InputManager.cc
