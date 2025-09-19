@@ -17,7 +17,7 @@
 #include <string_view>
 #include <thread>
 
-namespace bb::core {
+namespace febundle::core {
 
     inline const char* COLOR_GREY = "\x1b[90m";
     inline const char* COLOR_BLUE = "\x1b[34m";
@@ -262,41 +262,41 @@ private:
   atomic_bool _running = true;
 };
 
-} // namespace bb::core
+} // namespace febundle::core
 
 // —————— macros ——————
 #ifdef FE_DEBUG 
 #define LOG_TRACE(fmt, ...)                                                    \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Trace,                      \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Trace,                      \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 #define LOG_DEBUG(fmt, ...)                                                    \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Debug,                      \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Debug,                      \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 #define LOG_INFO(fmt, ...)                                                     \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Info,                       \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Info,                       \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 #define LOG_WARN(fmt, ...)                                                     \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Warn,                       \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Warn,                       \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 
 #define FLOG_TRACE(fmt, ...)                                                   \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Trace,                \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Trace,                \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 #define FLOG_DEBUG(fmt, ...)                                                   \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Debug,                \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Debug,                \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 #define FLOG_INFO(fmt, ...)                                                    \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Info,                 \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Info,                 \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 #define FLOG_WARN(fmt, ...)                                                    \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Warn,                 \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Warn,                 \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 
@@ -328,24 +328,24 @@ private:
 #endif
 
 #define LOG_ERROR(fmt, ...)                                                    \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Error,                      \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Error,                      \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 #define LOG_FATAL(fmt, ...)                                                    \
-  bb::core::Logger::Self().Log(bb::core::LogLevel::Fatal,                      \
+  febundle::core::Logger::Self().Log(febundle::core::LogLevel::Fatal,                      \
                                std::source_location::current(), fmt,           \
                                ##__VA_ARGS__)
 
 #define FLOG_ERROR(fmt, ...)                                                   \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Error,                \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Error,                \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 #define FLOG_FATAL(fmt, ...)                                                   \
-  bb::core::Logger::Self().LogToFile(bb::core::LogLevel::Fatal,                \
+  febundle::core::Logger::Self().LogToFile(febundle::core::LogLevel::Fatal,                \
                                      std::source_location::current(), fmt,     \
                                      ##__VA_ARGS__)
 
 #define ENABLE_FILE_LOGGING(enable)                                            \
-  bb::core::Logger::Self().EnableFileLogging(enable);
+  febundle::core::Logger::Self().EnableFileLogging(enable);
 
 #endif // INCLUDE_FEBUNDLE_CORE_LOGGER_HPP_

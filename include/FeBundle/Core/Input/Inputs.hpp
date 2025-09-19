@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FEBUNDLE_CORE_INPUT_INPUTS_HPP_
 #define INCLUDE_FEBUNDLE_CORE_INPUT_INPUTS_HPP_
 
-namespace core::input {
+namespace febundle::core::input {
 
 enum class KeyState {
   Idle,
