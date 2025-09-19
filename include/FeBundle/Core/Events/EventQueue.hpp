@@ -1,9 +1,9 @@
 #ifndef INCLUDE_CORE_EVENTS_EVENT_QUEUE_HPP_
 #define INCLUDE_CORE_EVENTS_EVENT_QUEUE_HPP_
 
-#include "FeBundle/Core/Defines.hpp"
+#include <vector>
 
-namespace febundle::events {
+namespace febundle::core::events {
 
 template <typename Event>
 class EventQueue {

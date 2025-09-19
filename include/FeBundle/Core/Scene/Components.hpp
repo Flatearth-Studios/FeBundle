@@ -110,7 +110,7 @@ struct Kinematic : public IComponent {
   }
   
   static constexpr enum Component type = Component::Input;
-  math::Vec2 lastSafePos{};
+  core::math::Vec2 lastSafePos{};
 };
 
 struct Texture : public IComponent {

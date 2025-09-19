@@ -3,7 +3,7 @@
 #include "FeBundle/Core/Logger.hpp"
 #include <cmath>
 
-namespace febundle::math {
+namespace febundle::core::math {
 
 Vec2::Vec2() : x(0), y(0) {}
 

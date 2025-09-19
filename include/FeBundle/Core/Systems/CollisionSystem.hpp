@@ -49,7 +49,7 @@ private:
   const int64 _cMaxCallbacks;
   int64 _enterCallbackCount, _stayCallbackCount, _exitCallbackCount;
   float32 _cellSize;
-  events::EventQueue<CollisionEvent> _eventQ;
+  core::events::EventQueue<CollisionEvent> _eventQ;
   std::vector<std::function<void(const CollisionEvent &)>> _enterCallbacks;
   std::vector<std::function<void(const CollisionEvent &)>> _stayCallbacks;
   std::vector<std::function<void(const CollisionEvent &)>> _exitCallbacks;

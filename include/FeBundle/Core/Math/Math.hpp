@@ -3,7 +3,7 @@
 
 #include "FeBundle/Core/Defines.hpp"
 
-namespace febundle::math {
+namespace febundle::core::math {
 
 struct Vec2 {
   float32 x, y;
