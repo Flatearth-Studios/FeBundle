@@ -175,3 +175,4 @@ install(FILES
 target_link_libraries(fe_bundle PUBLIC SDL3::SDL3 SDL3_image::SDL3_image)
 
 add_subdirectory(testbed)
+add_subdirectory(tests)
