@@ -1,16 +1,16 @@
 # Testbed project that depends on FeBundle
 cmake_minimum_required(VERSION 3.20)
-project(fe_bundle_testbed LANGUAGES CXX)
+project(fe_bundle_unit_tests LANGUAGES CXX)
 
-add_executable(fe_bundle_testbed
+add_executable(fe_bundle_unit_tests
     src/main.cpp
 )
 
-target_compile_features(fe_bundle_testbed PRIVATE cxx_std_23)
+target_compile_features(fe_bundle_unit_tests PRIVATE cxx_std_23)
 
-target_link_libraries(fe_bundle_testbed PRIVATE FeBundle::fe_bundle)
+target_link_libraries(fe_bundle_unit_tests PRIVATE FeBundle::fe_bundle)
 
-target_include_directories(fe_bundle_testbed PRIVATE
+target_include_directories(fe_bundle_unit_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
