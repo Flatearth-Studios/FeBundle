@@ -1,6 +1,4 @@
-#include "StoreTests.hpp"
-
-
+#include "SceneTests.hpp"
 #include "../Expect.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
 

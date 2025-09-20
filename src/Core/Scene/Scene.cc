@@ -1,7 +1,6 @@
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
 #define FE_DEBUG
-#include "FeBundle/Core/Logger.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 

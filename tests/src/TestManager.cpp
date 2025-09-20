@@ -29,18 +29,17 @@ void TestManager::RegisterTests(TestRegFn regFunc) {
 }
 
 void TestManager::RunTests() {
-  uint32 passed = 0;
-  uint32 failed = 0;
-  uint32 count = 0;
-
   Clock totalTimeClock;
   totalTimeClock.Start();
 
+  uint32 passed = 0;
+  uint32 failed = 0;
   for (auto [testName, tests] : _tests) {
+    std::size_t count = tests.size();
     Clock testTimeClock;
     testTimeClock.Start();
     int32 i = 0;
-    LOG_INFO("Starting tests for: {}", testName);
+    LOG_DEBUG("Starting tests for: {}", testName);
     for (auto testFn : tests) {
       bool result = testFn.func();
       testTimeClock.Update();
@@ -59,7 +58,6 @@ void TestManager::RunTests() {
         status = std::format("[FE/TESTS] - [✗] FAIL: {}", failed);
       }
 
-      count++;
       testTimeClock.Update();
       totalTimeClock.Update();
       LOG_INFO("{}. Executed {} of {} in ({:.4f} sec / {:.4f} sec total)",

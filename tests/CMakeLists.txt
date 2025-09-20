@@ -9,6 +9,7 @@ add_executable(fe_bundle_unit_tests
     src/Clock/ClockTests.cpp
     src/Events/EventQueueTests.cpp
     src/Scene/StoreTests.cpp
+    src/Scene/SceneTests.cpp
 )
 
 target_compile_features(fe_bundle_unit_tests PRIVATE cxx_std_23)

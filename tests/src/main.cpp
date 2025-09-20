@@ -1,4 +1,4 @@
-#include "Scene/StoreTests.hpp"
+#include "Scene/SceneTests.hpp"
 #define FE_DEBUG
 #include "Math/MathTests.hpp"
 #include "Clock/ClockTests.hpp"
@@ -14,6 +14,7 @@ int main() {
   ClockRegisterTests(tm);
   EventQueueRegisterTests(tm);
   StoreRegisterTests(tm);
+  SceneRegisterTests(tm);
 
   LOG_DEBUG("Starting tests...");
   tm.RunTests();
