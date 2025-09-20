@@ -4,6 +4,8 @@ project(fe_bundle_unit_tests LANGUAGES CXX)
 
 add_executable(fe_bundle_unit_tests
     src/main.cpp
+    src/TestManager.cpp
+    src/Math/MathTests.cpp
 )
 
 target_compile_features(fe_bundle_unit_tests PRIVATE cxx_std_23)
