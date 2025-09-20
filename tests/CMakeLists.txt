@@ -6,6 +6,8 @@ add_executable(fe_bundle_unit_tests
     src/main.cpp
     src/TestManager.cpp
     src/Math/MathTests.cpp
+    src/Clock/ClockTests.cpp
+    src/Events/EventQueueTests.cpp
 )
 
 target_compile_features(fe_bundle_unit_tests PRIVATE cxx_std_23)

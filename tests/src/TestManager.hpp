@@ -13,14 +13,24 @@ struct TestEntry {
   string description;
 };
 
+struct TestMetadata {
+  string name;
+  std::vector<TestEntry> callbacks;
+};
+
+using TestRegFn = std::function<TestMetadata()>;
+
 class TestManager {
 public:
   TestManager(std::size_t maxTestCapacity = 2000);
-  void RegisterTest(TestFn func, string description);
+  void RegisterTests(TestRegFn regFunc);
   void RunTests();
 
 private:
-  std::vector<TestEntry> _tests;
+  void prepareFor(const string &testName);
+
+private:
+  umap<string, std::vector<TestEntry>> _tests;
   std::size_t _registerCount{0};
   const std::size_t _cMaxTestCapacity;
 };

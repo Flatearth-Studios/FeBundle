@@ -6,57 +6,84 @@
 namespace febundle::tests {
 
 TestManager::TestManager(std::size_t maxTestCapacity)
-    : _cMaxTestCapacity(maxTestCapacity) {
-  _tests.reserve(maxTestCapacity);
-}
+    : _cMaxTestCapacity(maxTestCapacity) {}
 
-void TestManager::RegisterTest(TestFn func, string description) {
-  if (_tests.size() == _cMaxTestCapacity) {
-    FLOG_WARN(
-        "attempt to register test when maximum capacity is already reached");
-    return;
+void TestManager::RegisterTests(TestRegFn regFunc) {
+  const TestMetadata meta = regFunc();
+  auto it = _tests.find(meta.name);
+  if (it == _tests.end()) {
+    prepareFor(meta.name);
   }
-  _tests.emplace_back(TestEntry{.func = func, .description = description});
+
+  for (const auto &callback : meta.callbacks) {
+    if (_tests[meta.name].size() >= _cMaxTestCapacity) {
+      FLOG_WARN("attempt to add tests but reached max capacity for test '{}'",
+                meta.name);
+      return;
+    }
+    _tests[meta.name].emplace_back(TestEntry{
+        .func = callback.func,
+        .description = callback.description,
+    });
+  }
 }
 
 void TestManager::RunTests() {
   uint32 passed = 0;
   uint32 failed = 0;
-  uint32 count = _tests.size();
+  uint32 count = 0;
 
   Clock totalTimeClock;
   totalTimeClock.Start();
 
-  for (uint32 i = 0; i < count; i++) {
+  for (auto [testName, tests] : _tests) {
     Clock testTimeClock;
     testTimeClock.Start();
-    bool result = _tests[i].func();
-    testTimeClock.Update();
+    int32 i = 0;
+    LOG_INFO("Starting tests for: {}", testName);
+    for (auto testFn : tests) {
+      bool result = testFn.func();
+      testTimeClock.Update();
 
-    if (result == true) {
-      passed++;
-    } else {
-      LOG_ERROR("[FE/TESTS] - [FAILED]: {}", _tests[i].description);
-      failed++;
+      if (result == true) {
+        passed++;
+      } else {
+        LOG_ERROR("[FE/TESTS] - [FAILED]: {}", testFn.description);
+        failed++;
+      }
+
+      string status;
+      if (result == true) {
+        status = std::format("[FE/TESTS] - [✓] PASS: {}", passed);
+      } else {
+        status = std::format("[FE/TESTS] - [✗] FAIL: {}", failed);
+      }
+
+      count++;
+      testTimeClock.Update();
+      totalTimeClock.Update();
+      LOG_INFO("{}. Executed {} of {} in ({:.4f} sec / {:.4f} sec total)",
+               status, i + 1, count, testTimeClock.elapsed,
+               totalTimeClock.elapsed);
+      i++;
     }
-
-    string status;
-    if (result == true) {
-      status = std::format("[FE/TESTS] - [✓] PASS: {}", passed);
-    } else {
-      status = std::format("[FE/TESTS] - [✗] FAIL: {}", failed);
-    }
-
-    testTimeClock.Update();
-    totalTimeClock.Update();
-    LOG_INFO("{}. Executed {} of {} in ({} sec / {} sec total)", status,
-             i + 1, count, testTimeClock.elapsed, totalTimeClock.elapsed);
   }
 
   totalTimeClock.Stop();
   uint32 total = passed + failed;
   LOG_INFO("[FE/TESTS] - Results: {} passed | {} failed | {} total", passed,
            failed, total);
+}
+
+void TestManager::prepareFor(const string &testName) {
+  auto it = _tests.find(testName);
+  if (it != _tests.end()) {
+    return;
+  }
+
+  std::vector<TestEntry> in;
+  in.reserve(_cMaxTestCapacity);
+  _tests[testName] = std::move(in);
 }
 
 } // namespace febundle::tests
