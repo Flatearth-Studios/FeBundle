@@ -53,7 +53,7 @@ public:
   }
 
   const std::vector<T> &Data() const { return _data; }
-  const std::vector<T> &Owners() const { return _owners; }
+  const std::vector<Entity> &Owners() const { return _owners; }
 
 private:
   std::vector<T> _data;
