@@ -27,16 +27,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies (Linux)
+      - name: Build SDL3 (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsdl3-dev libsdl3-image-dev ninja-build
+          sudo apt-get install -y ninja-build cmake build-essential
+          git clone https://github.com/libsdl-org/SDL.git --branch main --depth 1
+          cmake -S SDL -B SDL/build -DCMAKE_INSTALL_PREFIX=/usr
+          sudo cmake --build SDL/build --target install
 
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
+      - name: Build SDL3_image (Linux)
+        if: runner.os == 'Linux'
         run: |
-          choco install ninja -y
+          git clone https://github.com/libsdl-org/SDL_image.git --branch main --depth 1
+          cmake -S SDL_image -B SDL_image/build -DCMAKE_INSTALL_PREFIX=/usr
+          sudo cmake --build SDL_image/build --target install
+
+      - name: Setup MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja -y
 
       - name: Set reusable strings
         id: strings
@@ -55,8 +68,12 @@ jobs:
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests (Linux)
+        if: runner.os == 'Linux'
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        run: |
-          echo "Running FeBundle unit tests..."
-          ./tests/fe_bundle_unit_tests || exit 1
+        run: ./tests/fe_bundle_unit_tests
+
+      - name: Run Unit Tests (Windows)
+        if: runner.os == 'Windows'
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: .\tests\fe_bundle_unit_tests.exe
