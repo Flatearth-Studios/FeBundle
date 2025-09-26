@@ -11,13 +11,14 @@ namespace febundle {
 
 ApplicationState App::_appState{};
 
-App::App(Game *gameInstance)
+App::App(Game *gameInstance, bool logToFile, bool logToStdout)
     : _feWindow(gameInstance->windowSpecs),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
                                memory::Tag::Renderer, _feWindow))
                      .value()) {
 
-  ENABLE_FILE_LOGGING(true);
+  ENABLE_FILE_LOGGING(logToFile);
+  ENABLE_STDOUT_LOGGING(logToStdout);
   _appState.gameInstance = gameInstance;
 }
 
