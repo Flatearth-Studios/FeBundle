@@ -35,6 +35,10 @@ inline Vec2 Slide(const Vec2& motion, const Vec2& normal) {
   return motion - normal * dot;
 }
 
+inline float32 Abs(float32 val) {
+  return val < 0.0f ? val * (-1) : val;
+}
+
 } // namespace febundle::math
 
 #endif // INCLUDE_FEBUNDLE_CORE_MATH_MATH_HPP_

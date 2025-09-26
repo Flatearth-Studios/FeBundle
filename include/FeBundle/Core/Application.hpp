@@ -5,17 +5,17 @@
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
-#include "Renderer/Renderer.hpp"
 #include "GameTypes.hpp"
 #include "Memory/Memory.hpp"
+#include "Renderer/Renderer.hpp"
 
 namespace febundle {
 
 using RendererPtr = std::unique_ptr<renderer::FeRenderer,
                                     memory::Deleter<renderer::FeRenderer>>;
 
-using ImGuiPtr = std::unique_ptr<renderer::ImGuiLayer, 
-                                    memory::Deleter<renderer::ImGuiLayer>>;
+using ImGuiPtr = std::unique_ptr<renderer::ImGuiLayer,
+                                 memory::Deleter<renderer::ImGuiLayer>>;
 
 struct ApplicationState {
   Game *gameInstance;
@@ -29,7 +29,7 @@ struct ApplicationState {
 
 class App {
 public:
-  FEAPI App(Game *gameInstance);
+  FEAPI App(Game *gameInstance, bool logToFile = true, bool logToStdout = true);
   FEAPI ~App();
   FEAPI std::expected<void, Error> Init();
   FEAPI std::expected<void, Error> Run();

@@ -151,7 +151,7 @@ int main() {
   Game gameInstance;
   auto res = febundle::CreateGame(gameInstance);
 
-  febundle::App app(&gameInstance);
+  febundle::App app(&gameInstance, true, false);
   if (auto res = app.Init(); !res.has_value()) {
     LOG_ERROR("Application failed to initialize");
     return -2;

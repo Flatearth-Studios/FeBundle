@@ -12,11 +12,11 @@ public:
     _events.push_back(evt);
   }
   
-  const std::vector<Event> &Events() const {
+  inline const std::vector<Event> &Events() const noexcept {
     return _events;
   }
 
-  void Clear() {
+  inline void Clear() noexcept {
     _events.clear();
   }
 
