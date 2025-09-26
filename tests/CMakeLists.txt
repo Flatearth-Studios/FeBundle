@@ -12,6 +12,15 @@ add_executable(fe_bundle_unit_tests
     src/Scene/SceneTests.cpp
 )
 
+target_sources(fe_bundle_unit_tests
+    PRIVATE
+        src/TestManager.hpp
+        src/Math/MathTests.hpp
+        src/Clock/ClockTests.hpp
+        src/Events/EventQueueTests.hpp
+        src/Scene/SceneTests.hpp
+)
+
 target_compile_features(fe_bundle_unit_tests PRIVATE cxx_std_23)
 
 target_link_libraries(fe_bundle_unit_tests PRIVATE FeBundle::fe_bundle)
