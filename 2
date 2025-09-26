@@ -70,7 +70,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '2e6fcc44573d091af0321f99c89b212997a76f1f'
-          vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
 
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
