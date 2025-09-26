@@ -11,16 +11,16 @@ jobs:
     runs-on: ${{ matrix.os }}
 
 
-  strategy:
-    fail-fast: false
-    matrix:
-      include:
-        - os: ubuntu-latest
-          cpp_compiler: g++-14
-          build_type: Release
-        - os: windows-latest
-          cpp_compiler: cl
-          build_type: Release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cpp_compiler: g++-14
+            build_type: Release
+          - os: windows-latest
+            cpp_compiler: cl
+            build_type: Release
 
 
     steps:
