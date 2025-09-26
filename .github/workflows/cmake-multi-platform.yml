@@ -30,12 +30,17 @@ jobs:
           submodules: recursive
 
       # ---------- Linux ----------
-      - name: Install GCC 15 (Linux)
+      - name: Install GCC 14 (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
-          sudo apt-get install -y gcc-15 g++-15
+          sudo apt-get install -y gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+          gcc --version
+          g++ --version
+
 
       - name: Install deps (Linux)
         if: runner.os == 'Linux'
@@ -75,10 +80,6 @@ jobs:
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
         run: choco install ninja -y
-
-      - name: Install SDL3 with vcpkg (Windows)
-        if: runner.os == 'Windows'
-        run: vcpkg install sdl3 sdl3-image
 
       # ---------- Shared ----------
       - name: Set reusable strings
