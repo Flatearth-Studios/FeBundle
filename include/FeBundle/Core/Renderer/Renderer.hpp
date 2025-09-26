@@ -4,7 +4,6 @@
 #include "../Window/Window.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
-#include "FeBundle/Core/Systems/AssetManager.hpp"
 
 #include <SDL3/SDL_render.h>
 

@@ -1,5 +1,4 @@
 #include "FeBundle/Core/Scene/Components.hpp"
-#include "FeBundle/Core/Systems/AssetManager.hpp"
 #include <SDL3/SDL_blendmode.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_oldnames.h>
@@ -146,9 +145,9 @@ SDL_Texture *FeRenderer::loadTexture(const scene::Texture &texture) {
     return it->second;
   }
 
-  SDL_Texture *sdlTexture = IMG_LoadTexture(_pRenderer, texture.path.c_str());
+  SDL_Texture *sdlTexture = IMG_LoadTexture(_pRenderer, texture.path.string().c_str());
   if (sdlTexture == nullptr) {
-    FLOG_ERROR("failed to load texture {}: {}", texture.path.c_str(),
+    FLOG_ERROR("failed to load texture {}: {}", texture.path.string(),
                SDL_GetError());
     return nullptr;
   }
@@ -181,9 +180,9 @@ std::size_t FeRenderer::loadTextures() {
     }
 
     SDL_Texture *sdlTexture =
-        IMG_LoadTexture(_pRenderer, texture->path.c_str());
+        IMG_LoadTexture(_pRenderer, texture->path.string().c_str());
     if (!sdlTexture) {
-      FLOG_ERROR("failed to load texture {}: {}", texture->path.c_str(),
+      FLOG_ERROR("failed to load texture {}: {}", texture->path.string(),
                  SDL_GetError());
       continue;
     }
