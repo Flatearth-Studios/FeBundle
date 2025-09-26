@@ -61,9 +61,9 @@ jobs:
         if: runner.os == 'Windows'
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgArguments: 'sdl3 sdl3-image'
           vcpkgGitCommitId: '2e6fcc44573d091af0321f99c89b212997a76f1f'
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          runVcpkgInstall: true
 
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
@@ -75,14 +75,29 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - name: Configure CMake
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -G Ninja
-          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
-          -S ${{ github.workspace }}
+      - name: Install SDL3 with vcpkg (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install sdl3 sdl3-image
+
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y ninja-build
+          cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G Ninja \
+            -S ${{ github.workspace }}
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -B ${{ steps.strings.outputs.build-output-dir }} ^
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} ^
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ^
+            -G Ninja ^
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+            -S ${{ github.workspace }}
 
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
