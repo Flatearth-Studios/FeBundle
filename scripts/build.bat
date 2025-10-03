@@ -1,50 +1,53 @@
-@echo off
+y@echo off
 setlocal
 
 :: ========================
-:: Configuration
+:: configuration
 :: ========================
-set BUILD_DIR=build
-set BUILD_TYPE=Debug
+set build_dir=build
+set build_type=debug
 
-:: Clean build dir if exists
-if exist %BUILD_DIR% (
-    echo [Clean] Removing old build dir...
-    rmdir /s /q %BUILD_DIR%
+:: clean build dir if exists
+if exist %build_dir% (
+    echo [clean] removing old build dir...
+    rmdir /s /q %build_dir%
 )
 
-mkdir %BUILD_DIR%
-cd %BUILD_DIR%
+mkdir %build_dir%
+cd %build_dir%
 
 :: ========================
-:: Step 1: Run the exact working CMake command
+:: step 1: run the exact working cmake command
 :: ========================
-echo [CMake] Configuring project...
-cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 ^
-  -DFEBUNDLE_COMPILED=ON ^
-  -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
-  -DVCPKG_TARGET_TRIPLET=x64-windows ^
-  -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+echo [cmake] configuring project...
+cmake -s .. -b . -g "visual studio 17 2022" -a x64 ^
+  -dfebundle_compiled=on ^
+  -dcmake_toolchain_file="c:\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
+  -dvcpkg_target_triplet=x64-windows ^
+  -dcmake_build_type=%build_type%
 
 if %errorlevel% neq 0 (
-    echo [ERROR] CMake configure failed!
+    echo [error] cmake configure failed!
     exit /b %errorlevel%
 )
 
 :: ========================
-:: Step 2: Build the solution
+:: step 2: build the solution
 :: ========================
-echo [CMake] Building %BUILD_TYPE%...
-cmake --build . --config %BUILD_TYPE%
+echo [cmake] building %build_type%...
+cmake --build . --config %build_type%
 
 if %errorlevel% neq 0 (
-    echo [ERROR] Build failed!
+    echo [error] build failed!
     exit /b %errorlevel%
 )
 
+xcopy ".\assets" ".\build\testbed\Release\assets" /E /I /Y
+xcopy ".\assets" ".\build\testbed\Debug\assets" /E /I /Y
+
 :: ========================
-:: Done
+:: done
 :: ========================
-echo [SUCCESS] FeBundle built successfully.
+echo [success] febundle built successfully.
 cd ..
 endlocal

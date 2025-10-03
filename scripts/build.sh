@@ -80,5 +80,7 @@ if [[ -f "${BUILD_DIR}/compile_commands.json" ]]; then
   ln -sf "${BUILD_DIR}/compile_commands.json" compile_commands.json || true
 fi
 
+cp -r ./assets "${BUILD_DIR}/testbed/"
+
 echo "Done."
 
