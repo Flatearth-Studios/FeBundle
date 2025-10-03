@@ -57,6 +57,9 @@ static scene::Scene makeLevel2(Game &outGame) {
   scene::Input input;
   scene::BoxCollider collider(64, 64);
 
+  sprite.assetHandle = outGame.assetLoader.LoadFor(e, "assets/player.png",
+                                                   assets::AssetType::Texture);
+
   input.keyMap[core::input::Key::W] = false;
   input.keyMap[core::input::Key::A] = false;
   input.keyMap[core::input::Key::S] = false;

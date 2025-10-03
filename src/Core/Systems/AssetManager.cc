@@ -1,3 +1,4 @@
+#define FE_DEBUG
 #include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Assets/Texture.hpp"
@@ -30,6 +31,7 @@ void AssetManager::Sync() {
   auto &reg = registry();
   std::size_t assetCount = reg.assets.size() + reg.badAssets.size();
   if (_cpAssetLoader->Version() == _latestVersion) {
+    FLOG_DEBUG("already on the latest version of asset loader");
     // No new assets to load
     return;
   }
@@ -43,6 +45,7 @@ void AssetManager::Sync() {
       const auto absPath = fs::absolute(it->path);
       auto assetRes = loadImpl(absPath.string());
       if (!assetRes.has_value()) {
+        FLOG_WARN("asset on path {} could not be loaded", absPath.string());
         reg.badAssets.insert(*it);
         continue;
       }
@@ -51,6 +54,7 @@ void AssetManager::Sync() {
       if (reg.badAssets.contains(*it)) {
         reg.badAssets.erase(*it);
       }
+      FLOG_INFO("asset on path {} loaded successfuly", absPath.string());
     }
   }
 
