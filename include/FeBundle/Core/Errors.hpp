@@ -6,6 +6,7 @@ namespace febundle {
 enum class ErrorName {
   Null,
   BadAllocation,
+  UnknownAsset,
   AllocationException,
   CreateWindow,
   CreateRenderer,

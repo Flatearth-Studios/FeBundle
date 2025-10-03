@@ -12,16 +12,18 @@
 
 namespace febundle::systems {
 
-AssetManager::~AssetManager() { 
+AssetManager::AssetManager() {
+  _loaderImplementations.emplace(assets::AssetType::Texture, textureLoader);
+}
+
+AssetManager::~AssetManager() {
   auto &reg = registry();
   reg.assets.clear();
   reg.badAssets.clear();
-  _cpAssetLoader = nullptr; 
+  _cpAssetLoader = nullptr;
 }
 
-void AssetManager::SetLoader(const AssetLoader *cpAl) {
-  _cpAssetLoader = cpAl;
-}
+void AssetManager::SetLoader(const AssetLoader *cpAl) { _cpAssetLoader = cpAl; }
 
 void AssetManager::Sync() {
   if (_cpAssetLoader == nullptr) {
@@ -43,7 +45,7 @@ void AssetManager::Sync() {
       }
 
       const auto absPath = fs::absolute(it->path);
-      auto assetRes = loadImpl(absPath.string());
+      auto assetRes = loadImpl(absPath.string(), it->type);
       if (!assetRes.has_value()) {
         FLOG_WARN("asset on path {} could not be loaded", absPath.string());
         reg.badAssets.insert(*it);
@@ -70,23 +72,24 @@ assets::IAsset *AssetManager::AssetOf(const assets::AssetHandle &ah) {
   return reg.assets.at(ah).get();
 }
 
-std::expected<IAssetPtr, Error> AssetManager::loadImpl(const string &path) {
+std::expected<IAssetPtr, Error> AssetManager::loadImpl(const string &path,
+                                                       assets::AssetType type) {
+  if (!_loaderImplementations.contains(type))
+    return std::unexpected{Error(ErrorName::UnknownAsset)};
+  return _loaderImplementations[type](path);
+}
+
+// LOADERS
+
+std::expected<IAssetPtr, Error>
+AssetManager::textureLoader(const string &path) {
   SDL_Surface *surf = IMG_Load(path.c_str());
-  if (surf == nullptr) {
-    FLOG_ERROR("failed to load image {}: {}", path, SDL_GetError());
-    return std::unexpected{Error(ErrorName{ErrorName::LoadImage})};
+  if (!surf) {
+    return std::unexpected{Error(ErrorName::LoadImage)};
   }
 
-  auto res = memory::MakeUniquePoly<assets::IAsset, assets::Texture>(
+  return memory::MakeUniquePoly<assets::IAsset, assets::Texture>(
       memory::Tag::AssetManager, surf);
-
-  if (!res.has_value()) {
-    FLOG_ERROR("failed to allocate Texture for '{}'", path);
-    SDL_DestroySurface(surf);
-    return std::unexpected{res.error()};
-  }
-
-  return std::move(res.value());
 }
 
 } // namespace febundle::systems
