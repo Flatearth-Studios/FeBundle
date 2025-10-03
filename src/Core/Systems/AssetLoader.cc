@@ -3,8 +3,9 @@
 
 namespace febundle::systems {
 
-assets::AssetHandle AssetLoader::LoadFor(scene::Entity e, const fs::path &path,
-                                         assets::AssetType assetType) {
+assets::AssetHandle AssetLoader::LoadFor(scene::Entity e,
+                                         assets::AssetType assetType,
+                                         const fs::path &path) {
   // Candidate handle at last allocated id
   assets::AssetHandle retHandle(_nextAssetId - 1, assetType, path);
 
