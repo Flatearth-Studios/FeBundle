@@ -5,6 +5,7 @@
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Entity.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
+#include "FeBundle/Core/Systems/AssetLoader.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include <typeindex>
 

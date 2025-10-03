@@ -12,7 +12,7 @@ using febundle::Error;
 using febundle::Game;
 using namespace febundle;
 
-static scene::Scene makeLevel1() {
+static scene::Scene makeLevel1(Game &outGame) {
   scene::Scene scene;
   scene::Entity e = scene.Create();  // player
   scene::Entity e2 = scene.Create(); // obstacle
@@ -20,9 +20,11 @@ static scene::Scene makeLevel1() {
   // --- Player setup ---
   scene::Transform transform(5.0f, 4.0f);
   scene::Sprite sprite(e, 64, 64);
-  scene::Texture texture(1, "assets/player.png");
   scene::Input input;
   scene::BoxCollider collider(64, 64);
+
+  sprite.assetHandle = outGame.assetLoader.LoadFor(e, "assets/player.png",
+                                                   assets::AssetType::Texture);
 
   input.keyMap[core::input::Key::W] = false;
   input.keyMap[core::input::Key::A] = false;
@@ -34,7 +36,6 @@ static scene::Scene makeLevel1() {
 
   scene.AddComponent<scene::Transform>(e, transform);
   scene.AddComponent<scene::Sprite>(e, sprite);
-  scene.AddComponent<scene::Texture>(e, texture);
   scene.AddComponent<scene::Input>(e, input);
   scene.AddComponent<scene::BoxCollider>(e, collider);
   scene.AddComponent<scene::Kinematic>(e, kin);
@@ -47,13 +48,12 @@ static scene::Scene makeLevel1() {
   return scene;
 }
 
-static scene::Scene makeLevel2() {
+static scene::Scene makeLevel2(Game &outGame) {
   scene::Scene scene;
   scene::Entity e = scene.Create(); // player
 
   scene::Transform transform(200.f, 200.f);
   scene::Sprite sprite(e, 64, 64);
-  scene::Texture texture(1, "assets/player.png");
   scene::Input input;
   scene::BoxCollider collider(64, 64);
 
@@ -67,7 +67,6 @@ static scene::Scene makeLevel2() {
 
   scene.AddComponent<scene::Transform>(e, transform);
   scene.AddComponent<scene::Sprite>(e, sprite);
-  scene.AddComponent<scene::Texture>(e, texture);
   scene.AddComponent<scene::Input>(e, input);
   scene.AddComponent<scene::BoxCollider>(e, collider);
   scene.AddComponent<scene::Kinematic>(e, kin);
@@ -81,8 +80,8 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   outGame.windowSpecs.title = "Test Game";
 
   // push both levels into game
-  outGame.scenes.push_back(makeLevel1());
-  outGame.scenes.push_back(makeLevel2());
+  outGame.scenes.push_back(makeLevel1(outGame));
+  outGame.scenes.push_back(makeLevel2(outGame));
   outGame.activeSceneIndex = 0; // start on level1
 
   outGame.Initialize = [](Game &g) -> bool {

@@ -1,4 +1,7 @@
+#include "FeBundle/Core/Assets/Common.hpp"
+#include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
+#include "FeBundle/Core/Systems/AssetManager.hpp"
 #include <SDL3/SDL_blendmode.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_oldnames.h>
@@ -16,8 +19,8 @@ namespace febundle::renderer {
 
 bool FeRenderer::_sInitialized = false;
 
-FeRenderer::FeRenderer(window::Window &feWindow)
-    : _feWindow(feWindow) {}
+FeRenderer::FeRenderer(window::Window &feWindow, systems::AssetManager &am)
+    : _feWindow(feWindow), _assetManager(am) {}
 
 FeRenderer::~FeRenderer() { cleanup(); }
 
@@ -61,17 +64,16 @@ std::expected<void, Error> FeRenderer::Render() {
   for (const auto &[e, components] : entities) {
     seen++;
     if (!components.contains(scene::Component::Sprite) ||
-        !components.contains(scene::Component::Transform) ||
-        !components.contains(scene::Component::Texture)) {
-      FLOG_WARN("entity '{}' has sprite, texture, or transform component, but "
-                "not the trio", e);
+        !components.contains(scene::Component::Transform)) {
+      FLOG_WARN("entity '{}' has sprite or transform component, but "
+                "not both",
+                e);
       continue;
     }
 
     const auto *sprite = _cpScene->GetComponent<scene::Sprite>(e);
     const auto *transform = _cpScene->GetComponent<scene::Transform>(e);
-    const auto *texture = _cpScene->GetComponent<scene::Texture>(e);
-    if (!renderSprite(*transform, *sprite, *texture)) {
+    if (!renderSprite(*transform, *sprite)) {
       FLOG_WARN("renderer failed to render sprite of component {}", e);
       continue;
     }
@@ -83,10 +85,7 @@ std::expected<void, Error> FeRenderer::Render() {
 
 SDL_Renderer *FeRenderer::Handle() { return _pRenderer; }
 
-void FeRenderer::SetScene(const scene::Scene *scene) { 
-  _cpScene = scene; 
-  _texturesLoaded = loadTextures();
-}
+void FeRenderer::SetScene(const scene::Scene *scene) { _cpScene = scene; }
 
 void FeRenderer::Resize(uint32 width, uint32 height) {
   if (_pRenderer == nullptr) {
@@ -98,20 +97,43 @@ void FeRenderer::BeginFrame() { SDL_RenderClear(_pRenderer); }
 
 void FeRenderer::EndFrame() { SDL_RenderPresent(_pRenderer); }
 
-bool FeRenderer::renderSprite(const scene::Transform &transform,
-                              const scene::Sprite &sprite,
-                              const scene::Texture &texture) {
-  SDL_Texture *sdlTexture = loadTexture(texture);
-  if (sdlTexture == nullptr) {
-    LOG_WARN(
-        "Sprite texture of entity id '{}' could not be resolved nor loaded",
-        sprite.id);
-    return false;
+SDL_Texture *FeRenderer::loadTexture(assets::AssetHandle ah) {
+  if (_mapOfpTextures.contains(ah)) {
+    return _mapOfpTextures.at(ah);
   }
 
-  SDL_SetTextureBlendMode(sdlTexture, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureColorMod(sdlTexture, sprite.r, sprite.g, sprite.b);
-  SDL_SetTextureAlphaMod(sdlTexture, sprite.a);
+  assets::IAsset *asset = _assetManager.AssetOf(ah);
+  if (asset == nullptr) {
+    return nullptr;
+  }
+
+  if (asset->Type() != assets::AssetType::Texture) {
+    return nullptr;
+  }
+
+  assets::Texture *texture = static_cast<assets::Texture *>(asset);
+
+  auto *surf = texture->Surface();
+  SDL_Texture *sdlTexture = SDL_CreateTextureFromSurface(_pRenderer, surf);
+
+  if (sdlTexture != nullptr) {
+    _mapOfpTextures.emplace(ah, sdlTexture);
+  }
+
+  return sdlTexture;
+}
+
+
+bool FeRenderer::renderSprite(const scene::Transform &transform,
+                              const scene::Sprite &sprite) {
+  SDL_Texture *texture = loadTexture(sprite.assetHandle);
+  if (texture == nullptr) {
+    return false; 
+  }
+
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureColorMod(texture, sprite.r, sprite.g, sprite.b);
+  SDL_SetTextureAlphaMod(texture, sprite.a);
 
   const float32 width = sprite.width * transform.sx;
   const float32 height = sprite.height * transform.sy;
@@ -130,67 +152,9 @@ bool FeRenderer::renderSprite(const scene::Transform &transform,
       .y = origin.y * height,
   };
 
-  return SDL_RenderTextureRotated(_pRenderer, sdlTexture, nullptr, &destination,
-                                  angleDegree, &center, SDL_FLIP_NONE);
-}
-
-SDL_Texture *FeRenderer::loadTexture(const scene::Texture &texture) {
-  if (_cpScene == nullptr) {
-    FLOG_WARN("cannot load texture if no scene is set");
-    return nullptr;
-  }
-
-  auto it = _mapOfpTextures.find(texture.texHandle);
-  if (it != _mapOfpTextures.end()) {
-    return it->second;
-  }
-
-  SDL_Texture *sdlTexture = IMG_LoadTexture(_pRenderer, texture.path.string().c_str());
-  if (sdlTexture == nullptr) {
-    FLOG_ERROR("failed to load texture {}: {}", texture.path.string(),
-               SDL_GetError());
-    return nullptr;
-  }
-
-  _mapOfpTextures[texture.texHandle] = sdlTexture;
-  _texturesLoaded = _mapOfpTextures.size();
-  return sdlTexture;
-}
-
-std::size_t FeRenderer::loadTextures() {
-  if (_cpScene == nullptr) {
-    FLOG_WARN("cannot load textures if no scene is set");
-    return 0;
-  }
-
-  if (!_mapOfpTextures.empty()) {
-    _mapOfpTextures.clear();
-  }  
-
-  for (const auto &[e, components] : _cpScene->AccessAll()) {
-    if (!components.contains(scene::Component::Texture)) {
-      continue;
-    }
-
-    const auto *texture = _cpScene->GetComponent<scene::Texture>(e);
-    const auto texIt = _mapOfpTextures.find(texture->texHandle);
-    if (texIt != _mapOfpTextures.end()) {
-      // already loaded
-      continue;
-    }
-
-    SDL_Texture *sdlTexture =
-        IMG_LoadTexture(_pRenderer, texture->path.string().c_str());
-    if (!sdlTexture) {
-      FLOG_ERROR("failed to load texture {}: {}", texture->path.string(),
-                 SDL_GetError());
-      continue;
-    }
-
-    _mapOfpTextures[texture->texHandle] = sdlTexture;
-  }
-
-  return _mapOfpTextures.size();
+  return SDL_RenderTextureRotated(_pRenderer, texture, nullptr,
+                                  &destination, angleDegree, &center,
+                                  SDL_FLIP_NONE);
 }
 
 void FeRenderer::cleanup() {

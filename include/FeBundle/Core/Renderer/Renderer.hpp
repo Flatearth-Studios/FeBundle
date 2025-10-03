@@ -2,8 +2,11 @@
 #define INCLUDE_FEBUNDLE_CORE_RENDERER_RENDERER_HPP_
 
 #include "../Window/Window.hpp"
+#include "FeBundle/Core/Assets/Common.hpp"
+#include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
+#include "FeBundle/Core/Systems/AssetManager.hpp"
 
 #include <SDL3/SDL_render.h>
 
@@ -11,7 +14,7 @@ namespace febundle::renderer {
 
 class FeRenderer {
 public:
-  explicit FeRenderer(window::Window &feWindow);
+  explicit FeRenderer(window::Window &feWindow, systems::AssetManager &am);
   ~FeRenderer();
   std::expected<void, Error> Init();
   std::expected<void, Error> Render();
@@ -23,10 +26,10 @@ public:
 
 private:
   std::expected<void, Error> initImGui();
+  SDL_Texture *loadTexture(assets::AssetHandle ah);
   bool renderSprite(const scene::Transform &transform,
-                    const scene::Sprite &sprite, const scene::Texture &texture);
-  SDL_Texture *loadTexture(const scene::Texture &texture);
-  std::size_t loadTextures();
+                    const scene::Sprite &sprite);
+
   void cleanup();
 
 private:
@@ -35,7 +38,9 @@ private:
   const scene::Scene *_cpScene;
   static bool _sInitialized;
   std::size_t _texturesLoaded{0};
-  umap<scene::TextureHandle, SDL_Texture *> _mapOfpTextures;
+  systems::AssetManager &_assetManager;
+  umap<assets::AssetHandle, SDL_Texture *, assets::AssetHandleHash>
+      _mapOfpTextures;
 };
 
 } // namespace febundle::renderer

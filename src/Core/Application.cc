@@ -14,11 +14,10 @@ ApplicationState App::_appState{};
 App::App(Game *gameInstance, bool logToFile, bool logToStdout)
     : _feWindow(gameInstance->windowSpecs),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
-                               memory::Tag::Renderer, _feWindow))
+                               memory::Tag::Renderer, _feWindow, _assetManager))
                      .value()) {
 
   ENABLE_FILE_LOGGING(logToFile);
-  ENABLE_STDOUT_LOGGING(logToStdout);
   _appState.gameInstance = gameInstance;
 }
 
@@ -57,9 +56,11 @@ std::expected<void, Error> App::Init() {
     FLOG_WARN("failed to initialize ImGui layer");
   }
 
+  _assetManager.SetLoader(&_appState.gameInstance->assetLoader);
   _appState.width = _appState.gameInstance->windowSpecs.width;
   _appState.height = _appState.gameInstance->windowSpecs.height;
   _appState.clock.Start();
+  _assetManager.Sync();
   FLOG_INFO("application initialized successfully");
   return {};
 }
@@ -102,6 +103,8 @@ std::expected<void, Error> App::Run() {
       FLOG_ERROR("failed to resize window");
       return std::unexpected{res.error()};
     }
+
+    _assetManager.Sync();
 
     _pRenderer->BeginFrame();
     _pImguiLayer->BeginFrame();

@@ -21,6 +21,8 @@ option(FEBUNDLE_IMGUI_SDL3_GL3 "Enable ImGui SDL3 + OpenGL3 backends" OFF)
 set(FEBUNDLE_HEADERS
     include/FeBundle/FeBundle.hpp
     include/FeBundle/Core/Logger.hpp
+    include/FeBundle/Core/Assets/Common.hpp
+    include/FeBundle/Core/Assets/Texture.hpp
     include/FeBundle/Core/Defines.hpp
     include/FeBundle/Core/Memory/Memory.hpp
     include/FeBundle/Core/Window/Window.hpp
@@ -31,6 +33,8 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Scene/Store.hpp
     include/FeBundle/Core/Scene/Scene.hpp
     include/FeBundle/Core/Systems/InputManager.hpp
+    include/FeBundle/Core/Systems/AssetManager.hpp
+    include/FeBundle/Core/Systems/AssetLoader.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
     include/FeBundle/Core/Clock.hpp
@@ -49,6 +53,8 @@ set(FEBUNDLE_SOURCES
     src/Core/Renderer/ImGuiLayer.cc
     src/Core/Scene/Scene.cc
     src/Core/Systems/InputManager.cc
+    src/Core/Systems/AssetLoader.cc
+    src/Core/Systems/AssetManager.cc
     src/Core/Systems/CollisionSystem.cc
     src/Core/Clock.cc
     src/Core/Application.cc

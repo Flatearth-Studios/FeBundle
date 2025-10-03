@@ -3,6 +3,7 @@
 
 #include "Clock.hpp"
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
+#include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include "GameTypes.hpp"
@@ -42,6 +43,7 @@ private:
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;
   systems::InputManager _inputManager;
+  systems::AssetManager _assetManager;
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
   std::size_t _previousSceneIndex;

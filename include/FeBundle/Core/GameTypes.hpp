@@ -16,6 +16,7 @@ struct Game {
   void *pState = nullptr;
   std::vector<scene::Scene> scenes;
   systems::CollisionSystem collisionSystem;
+  systems::AssetLoader assetLoader;
   std::size_t activeSceneIndex;
 
   std::function<bool(struct Game &)> Initialize;

@@ -4,6 +4,7 @@
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include "FeBundle/Core/Math/Math.hpp"
+#include "FeBundle/Core/Systems/AssetManager.hpp"
 
 namespace febundle::scene {
 
@@ -113,19 +114,6 @@ struct Kinematic : public IComponent {
   core::math::Vec2 lastSafePos{};
 };
 
-struct Texture : public IComponent {
-  enum Component Component() const override {
-    return type;
-  }
-
-  static constexpr enum Component type = Component::Texture;
-  fs::path path;
-  TextureHandle texHandle;
-
-  Texture(TextureHandle tex, const string &path)
-    : path(path), texHandle(tex) {}
-};
-
 struct Transform : public IComponent {
   enum Component Component() const override {
     return type;
@@ -149,6 +137,7 @@ struct Sprite : public IComponent {
   uint64 id{0};
   float32 width{1}, height{1};
   uint8 r{255}, g{255}, b{255}, a{255};
+  assets::AssetHandle assetHandle;
 
   Sprite() {}
   Sprite(uint64 id, float32 width, float32 height)

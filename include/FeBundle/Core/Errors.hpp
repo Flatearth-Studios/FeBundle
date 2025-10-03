@@ -14,6 +14,7 @@ enum class ErrorName {
   RenderSprites,
   ImGuiBackendInit,
   InitializeGameCallback,
+  LoadImage,
   NullReference,
   ResizeWindow,
 };
