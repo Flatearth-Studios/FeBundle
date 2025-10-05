@@ -1,7 +1,8 @@
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Assets/Texture.hpp"
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
+#include "FeBundle/Core/Events/EventQueue.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
-#include "FeBundle/Core/Systems/AssetManager.hpp"
 #include <SDL3/SDL_blendmode.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_oldnames.h>
@@ -19,8 +20,8 @@ namespace febundle::renderer {
 
 bool FeRenderer::_sInitialized = false;
 
-FeRenderer::FeRenderer(window::Window &feWindow, systems::AssetManager &am)
-    : _feWindow(feWindow), _assetManager(am) {}
+FeRenderer::FeRenderer(window::Window &feWindow, core::events::EventBus &evtBus)
+    : _feWindow(feWindow), _eventBus(evtBus) {}
 
 FeRenderer::~FeRenderer() { cleanup(); }
 
@@ -43,6 +44,36 @@ std::expected<void, Error> FeRenderer::Init() {
   }
 
   SDL_SetRenderDrawBlendMode(_pRenderer, SDL_BLENDMODE_BLEND);
+
+  // AssetLoadEvent Subscription
+  core::events::EventSubscription<core::events::AssetLoadEvent> subscription{
+      .subscriber = "FeRenderer",
+      .callback = [&](const core::events::AssetLoadEvent &evt)
+          -> std::expected<void, Error> {
+        auto *asset = evt.asset;
+        const auto type = evt.assetType;
+        if (type != assets::AssetType::Texture) {
+          return std::unexpected{Error(ErrorName{ErrorName::BadAsset})};
+        }
+
+        auto *texture = static_cast<assets::Texture *>(asset);
+        auto *surf = texture->Surface();
+        SDL_Texture *sdlTexture =
+            SDL_CreateTextureFromSurface(_pRenderer, surf);
+
+        if (sdlTexture != nullptr) {
+          _mapOfpTextures.emplace(evt.assetHandle, sdlTexture);
+        }
+
+        return {};
+      },
+  };
+
+  auto res = _eventBus.Subscribe(subscription);
+  if (!res.has_value()) {
+    FLOG_ERROR("failed to subscribe to AssetLoadEvent");
+  }
+
   _sInitialized = true;
   FLOG_INFO("renderer initialized successfully");
   return {};
@@ -102,33 +133,14 @@ SDL_Texture *FeRenderer::loadTexture(assets::AssetHandle ah) {
     return _mapOfpTextures.at(ah);
   }
 
-  assets::IAsset *asset = _assetManager.AssetOf(ah);
-  if (asset == nullptr) {
-    return nullptr;
-  }
-
-  if (asset->Type() != assets::AssetType::Texture) {
-    return nullptr;
-  }
-
-  assets::Texture *texture = static_cast<assets::Texture *>(asset);
-
-  auto *surf = texture->Surface();
-  SDL_Texture *sdlTexture = SDL_CreateTextureFromSurface(_pRenderer, surf);
-
-  if (sdlTexture != nullptr) {
-    _mapOfpTextures.emplace(ah, sdlTexture);
-  }
-
-  return sdlTexture;
+  return nullptr;
 }
-
 
 bool FeRenderer::renderSprite(const scene::Transform &transform,
                               const scene::Sprite &sprite) {
   SDL_Texture *texture = loadTexture(sprite.assetHandle);
   if (texture == nullptr) {
-    return false; 
+    return false;
   }
 
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -152,9 +164,8 @@ bool FeRenderer::renderSprite(const scene::Transform &transform,
       .y = origin.y * height,
   };
 
-  return SDL_RenderTextureRotated(_pRenderer, texture, nullptr,
-                                  &destination, angleDegree, &center,
-                                  SDL_FLIP_NONE);
+  return SDL_RenderTextureRotated(_pRenderer, texture, nullptr, &destination,
+                                  angleDegree, &center, SDL_FLIP_NONE);
 }
 
 void FeRenderer::cleanup() {

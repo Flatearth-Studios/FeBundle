@@ -3,18 +3,24 @@
 
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Defines.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Memory/Memory.hpp"
 #include "FeBundle/Core/Systems/AssetLoader.hpp"
 #include <SDL3/SDL_render.h>
 #include <SDL3_image/SDL_image.h>
+#include <functional>
 
 namespace febundle::systems {
 
 using IAssetPtr =
     std::unique_ptr<assets::IAsset, memory::PolyDeleter<assets::IAsset>>;
 
+using AssetLoaderFn =
+    std::function<std::expected<IAssetPtr, Error>(const string &)>;
+
 class AssetManager {
 public:
+   AssetManager(core::events::EventBus &evtBus);
   ~AssetManager();
 
   void SetLoader(const AssetLoader *cpAl);
@@ -25,6 +31,8 @@ private:
   bool _initialized{false};
   uint64 _latestVersion{0};
   const AssetLoader *_cpAssetLoader;
+  umap<assets::AssetType, AssetLoaderFn> _loaderImplementations;
+  core::events::EventBus &_eventBus;
 
 private:
   struct typeRegistry {
@@ -38,7 +46,10 @@ private:
     return reg;
   }
 
-  std::expected<IAssetPtr, Error> loadImpl(const string &path);
+  std::expected<IAssetPtr, Error> loadImpl(const string &path,
+                                           assets::AssetType type);
+
+  static std::expected<IAssetPtr, Error> textureLoader(const string &path);
 };
 
 } // namespace febundle::systems

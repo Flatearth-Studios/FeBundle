@@ -6,6 +6,7 @@
 #include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "GameTypes.hpp"
 #include "Memory/Memory.hpp"
 #include "Renderer/Renderer.hpp"
@@ -47,6 +48,7 @@ private:
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
   std::size_t _previousSceneIndex;
+  core::events::EventBus _eventBus;
 };
 
 } // namespace febundle

@@ -9,8 +9,8 @@ namespace febundle::systems {
 
 class AssetLoader {
 public:
-  assets::AssetHandle LoadFor(scene::Entity e, const fs::path &path,
-                              assets::AssetType assetType);
+  assets::AssetHandle LoadFor(scene::Entity e, assets::AssetType assetType,
+                              const fs::path &path);
 
   // void UnloadFor(scene::Entity e, const fs::path &path);
   // void UnloadAll(scene::Entity e);

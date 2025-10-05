@@ -6,6 +6,7 @@ namespace febundle {
 enum class ErrorName {
   Null,
   BadAllocation,
+  UnknownAsset,
   AllocationException,
   CreateWindow,
   CreateRenderer,
@@ -15,6 +16,7 @@ enum class ErrorName {
   ImGuiBackendInit,
   InitializeGameCallback,
   LoadImage,
+  BadAsset,
   NullReference,
   ResizeWindow,
 };

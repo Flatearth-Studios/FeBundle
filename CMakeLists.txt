@@ -37,6 +37,8 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Systems/AssetLoader.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
+    include/FeBundle/Core/Events/EventBus.hpp
+    include/FeBundle/Core/Events/AssetLoadEvent.hpp
     include/FeBundle/Core/Clock.hpp
     include/FeBundle/Core/Math/Math.hpp
     include/FeBundle/Core/GameTypes.hpp

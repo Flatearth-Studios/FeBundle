@@ -1,3 +1,4 @@
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #define FE_DEBUG
 #include "FeBundle/Core/Application.hpp"
@@ -12,9 +13,9 @@ namespace febundle {
 ApplicationState App::_appState{};
 
 App::App(Game *gameInstance, bool logToFile, bool logToStdout)
-    : _feWindow(gameInstance->windowSpecs),
+    : _feWindow(gameInstance->windowSpecs), _assetManager(_eventBus),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
-                               memory::Tag::Renderer, _feWindow, _assetManager))
+                               memory::Tag::Renderer, _feWindow, _eventBus))
                      .value()) {
 
   ENABLE_FILE_LOGGING(logToFile);
@@ -105,6 +106,10 @@ std::expected<void, Error> App::Run() {
     }
 
     _assetManager.Sync();
+    auto res = _eventBus.Dispatch<core::events::AssetLoadEvent>();
+    if (!res.has_value()) {
+      FLOG_WARN("failed to dispatch AssetLoadEvent for subscribers");
+    }
 
     _pRenderer->BeginFrame();
     _pImguiLayer->BeginFrame();
