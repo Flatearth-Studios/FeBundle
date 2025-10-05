@@ -4,7 +4,6 @@
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Logger.hpp"
 
-#include <algorithm>
 #include <functional>
 
 namespace febundle::core::events {
@@ -40,12 +39,9 @@ public:
   }
 
   inline void Unsubscribe(const string &subscriber) {
-    auto endIt = std::remove_if(_subscriptions.begin(), _subscriptions.end(),
-                                [&](const EventSubscription<Event> &sub) {
-                                  return subscriber == sub.subscriber;
-                                });
-
-    _subscriptions.erase(endIt, _subscriptions.end());
+    std::erase_if(_subscriptions, [&](const EventSubscription<Event> &sub) {
+      return subscriber == sub.subscriber;
+    });
   }
 
   inline const std::vector<Event> &Events() const noexcept { return _events; }
