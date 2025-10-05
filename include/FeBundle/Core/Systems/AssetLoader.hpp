@@ -5,6 +5,8 @@
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Scene/Entity.hpp"
 
+#include <mutex>
+
 namespace febundle::systems {
 
 class AssetLoader {
