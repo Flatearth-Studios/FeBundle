@@ -15,6 +15,7 @@ enum class Tag {
   Scene,
   Renderer,
   AssetManager,
+  EventBus,
 };
 
 struct MemStats {

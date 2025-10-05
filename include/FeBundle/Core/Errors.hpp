@@ -16,6 +16,7 @@ enum class ErrorName {
   ImGuiBackendInit,
   InitializeGameCallback,
   LoadImage,
+  BadAsset,
   NullReference,
   ResizeWindow,
 };

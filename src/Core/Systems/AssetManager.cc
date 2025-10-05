@@ -1,3 +1,5 @@
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #define FE_DEBUG
 #include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
@@ -12,7 +14,7 @@
 
 namespace febundle::systems {
 
-AssetManager::AssetManager() {
+AssetManager::AssetManager(core::events::EventBus &evtBus) : _eventBus(evtBus) {
   _loaderImplementations.emplace(assets::AssetType::Texture, textureLoader);
 }
 
@@ -51,6 +53,20 @@ void AssetManager::Sync() {
         reg.badAssets.insert(*it);
         continue;
       }
+
+      core::events::AssetLoadEvent evt{
+        .assetHandle = *it,
+        .assetType = it->type,
+        .asset = assetRes.value().get(),
+      };
+
+      auto res = _eventBus.Push<core::events::AssetLoadEvent>(evt);
+      if (!res.has_value()) {
+        FLOG_ERROR("failed to register AssetLoadEvent");
+        continue;
+      }
+
+      FLOG_INFO("firing new AssetLoadEvent");
 
       reg.assets.emplace(*it, std::move(assetRes.value()));
       if (reg.badAssets.contains(*it)) {

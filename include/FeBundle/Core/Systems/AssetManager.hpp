@@ -3,6 +3,7 @@
 
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Defines.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Memory/Memory.hpp"
 #include "FeBundle/Core/Systems/AssetLoader.hpp"
 #include <SDL3/SDL_render.h>
@@ -19,7 +20,7 @@ using AssetLoaderFn =
 
 class AssetManager {
 public:
-  AssetManager();
+   AssetManager(core::events::EventBus &evtBus);
   ~AssetManager();
 
   void SetLoader(const AssetLoader *cpAl);
@@ -31,6 +32,7 @@ private:
   uint64 _latestVersion{0};
   const AssetLoader *_cpAssetLoader;
   umap<assets::AssetType, AssetLoaderFn> _loaderImplementations;
+  core::events::EventBus &_eventBus;
 
 private:
   struct typeRegistry {

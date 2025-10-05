@@ -3,10 +3,10 @@
 
 #include "../Window/Window.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
-#include "FeBundle/Core/Assets/Texture.hpp"
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
-#include "FeBundle/Core/Systems/AssetManager.hpp"
 
 #include <SDL3/SDL_render.h>
 
@@ -14,7 +14,7 @@ namespace febundle::renderer {
 
 class FeRenderer {
 public:
-  explicit FeRenderer(window::Window &feWindow, systems::AssetManager &am);
+  explicit FeRenderer(window::Window &feWindow, core::events::EventBus &evtBus);
   ~FeRenderer();
   std::expected<void, Error> Init();
   std::expected<void, Error> Render();
@@ -38,7 +38,7 @@ private:
   const scene::Scene *_cpScene;
   static bool _sInitialized;
   std::size_t _texturesLoaded{0};
-  systems::AssetManager &_assetManager;
+  core::events::EventBus &_eventBus;
   umap<assets::AssetHandle, SDL_Texture *, assets::AssetHandleHash>
       _mapOfpTextures;
 };

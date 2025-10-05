@@ -9,6 +9,8 @@
 
 namespace febundle::core::events {
 
+// subscribers and emitters
+// emitters emit eventqueus and subscribers consume them
 class EventBus {
 public:
   template <typename Event> std::expected<void, Error> Dispatch() {
@@ -17,7 +19,7 @@ public:
       return std::unexpected{res.error()};
     }
 
-    auto *queue = res.value();
+    EventQueue<Event> *queue = res.value();
     queue->DispatchAll();
     return {};
   }
@@ -29,7 +31,7 @@ public:
       return std::unexpected{res.error()};
     }
 
-    auto *queue = res.value();
+    EventQueue<Event> *queue = res.value();
     queue->Subscribe(sub);
     return {};
   }
@@ -41,7 +43,7 @@ public:
       return std::unexpected{res.error()};
     }
 
-    auto *queue = res.value();
+    EventQueue<Event> *queue = res.value();
     queue->Unsubscribe(subsystem);
     return {};
   }
@@ -84,7 +86,7 @@ private:
 
     // Allocate new queue wrapper
     auto res = memory::MakeUniquePoly<IQueueWrapper, QueueWrapper<Event>>(
-        memory::Tag::Events);
+        memory::Tag::EventBus);
     if (!res) {
       return std::unexpected{Error(ErrorName::AllocationException)};
     }
