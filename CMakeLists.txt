@@ -35,6 +35,7 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Systems/InputManager.hpp
     include/FeBundle/Core/Systems/AssetManager.hpp
     include/FeBundle/Core/Systems/AssetLoader.hpp
+    include/FeBundle/Core/Systems/FileWatcher.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
     include/FeBundle/Core/Events/EventBus.hpp
@@ -56,6 +57,7 @@ set(FEBUNDLE_SOURCES
     src/Core/Scene/Scene.cc
     src/Core/Systems/InputManager.cc
     src/Core/Systems/AssetLoader.cc
+    src/Core/Systems/FileWatcher.cc
     src/Core/Systems/AssetManager.cc
     src/Core/Systems/CollisionSystem.cc
     src/Core/Clock.cc

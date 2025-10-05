@@ -21,13 +21,23 @@ public:
              uset<assets::AssetHandle, assets::AssetHandleHash>> &
   AllAssets() const;
 
+  std::vector<assets::AssetHandle> DirtyAssets();
+
+  bool IsDirty(const assets::AssetHandle &handle) const;
+
   uint64 Version() const;
 
+  void MarkAsDirty(const fs::path &path);
+
 private:
-  uint64 _version{1};
+  std::atomic<uint64> _version{1};
   uint64 _nextAssetId{1};
   umap<scene::Entity, uset<assets::AssetHandle, assets::AssetHandleHash>>
       _mapOfAssetHandles;
+  umap<fs::path, assets::AssetHandle> _pathToHandle;
+  uset<assets::AssetHandle, assets::AssetHandleHash> _dirtyAssets;
+
+  std::mutex _mtx;
 };
 
 } // namespace febundle::systems

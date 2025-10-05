@@ -4,7 +4,13 @@
 #include "FeBundle/Core/Assets/Common.hpp"
 namespace febundle::core::events {
 
+enum class AssetEventKind {
+  Load,
+  Reload,
+};
+
 struct AssetLoadEvent {
+  AssetEventKind eventKind;
   assets::AssetHandle assetHandle;
   assets::AssetType assetType;
   assets::IAsset *asset;

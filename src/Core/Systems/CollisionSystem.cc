@@ -134,8 +134,6 @@ bool CollisionSystem::checkCollision(const scene::Transform &transform1,
                                      const scene::Collider &collider2) {
   using scene::ShapeType;
 
-  FLOG_TRACE("checkCollision called");
-
   ShapeType st1 = collider1.Shape();
   ShapeType st2 = collider2.Shape();
 

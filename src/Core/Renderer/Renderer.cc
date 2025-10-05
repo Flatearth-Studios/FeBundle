@@ -1,3 +1,4 @@
+#define FE_DEBUG
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Events/AssetLoadEvent.hpp"
@@ -9,7 +10,6 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3_image/SDL_image.h>
-#define FE_DEBUG
 #include "FeBundle/Core/Logger.hpp"
 #include "FeBundle/Core/Renderer/Renderer.hpp"
 #include "FeBundle/Core/Window/Window.hpp"
@@ -53,16 +53,58 @@ std::expected<void, Error> FeRenderer::Init() {
         auto *asset = evt.asset;
         const auto type = evt.assetType;
         if (type != assets::AssetType::Texture) {
-          return std::unexpected{Error(ErrorName{ErrorName::BadAsset})};
+          return std::unexpected{Error(ErrorName::BadAsset)};
         }
 
         auto *texture = static_cast<assets::Texture *>(asset);
         auto *surf = texture->Surface();
-        SDL_Texture *sdlTexture =
-            SDL_CreateTextureFromSurface(_pRenderer, surf);
 
-        if (sdlTexture != nullptr) {
+        switch (evt.eventKind) {
+        case core::events::AssetEventKind::Load: {
+          SDL_Texture *sdlTexture =
+              SDL_CreateTextureFromSurface(_pRenderer, surf);
+          if (!sdlTexture) {
+            FLOG_ERROR("failed to create texture on load: {}", SDL_GetError());
+            return std::unexpected{Error(ErrorName::CreateRenderer)};
+          }
+
           _mapOfpTextures.emplace(evt.assetHandle, sdlTexture);
+          FLOG_DEBUG("loaded new texture {}", evt.assetHandle.id);
+          break;
+        }
+        case core::events::AssetEventKind::Reload: {
+          auto it = _mapOfpTextures.find(evt.assetHandle);
+          if (it == _mapOfpTextures.end()) {
+            FLOG_WARN("reload event for unknown texture, creating fresh");
+            SDL_Texture *sdlTexture =
+                SDL_CreateTextureFromSurface(_pRenderer, surf);
+            if (!sdlTexture) {
+              FLOG_ERROR("failed to create texture on reload: {}",
+                         SDL_GetError());
+              return std::unexpected{Error(ErrorName::CreateRenderer)};
+            }
+            _mapOfpTextures.emplace(evt.assetHandle, sdlTexture);
+            break;
+          }
+
+          // Destroy old GPU texture first to avoid leaks
+          if (it->second != nullptr) {
+            SDL_DestroyTexture(it->second);
+          }
+
+          SDL_Texture *newTex = SDL_CreateTextureFromSurface(_pRenderer, surf);
+          if (!newTex) {
+            FLOG_ERROR("failed to recreate texture on reload: {}",
+                       SDL_GetError());
+            return std::unexpected{Error(ErrorName::CreateRenderer)};
+          }
+
+          it->second = newTex;
+          FLOG_INFO("reloaded texture {}", evt.assetHandle.id);
+          break;
+        }
+        default:
+          break;
         }
 
         return {};
@@ -72,6 +114,8 @@ std::expected<void, Error> FeRenderer::Init() {
   auto res = _eventBus.Subscribe(subscription);
   if (!res.has_value()) {
     FLOG_ERROR("failed to subscribe to AssetLoadEvent");
+  } else {
+    FLOG_TRACE("FeRenderer subscribed to AssetLoadEvent");
   }
 
   _sInitialized = true;
@@ -96,9 +140,9 @@ std::expected<void, Error> FeRenderer::Render() {
     seen++;
     if (!components.contains(scene::Component::Sprite) ||
         !components.contains(scene::Component::Transform)) {
-      FLOG_WARN("entity '{}' has sprite or transform component, but "
-                "not both",
-                e);
+      //FLOG_WARN("entity '{}' has sprite or transform component, but "
+      //          "not both",
+      //          e);
       continue;
     }
 

@@ -45,11 +45,13 @@ std::expected<void, Error> App::Init() {
     FLOG_ERROR("failed to initialize renderer");
     return std::unexpected{res.error()};
   }
-  // Sets the scene for the renderer to render
+
+  // Bind renderer to initial scene
   _pRenderer->SetScene(&_appState.gameInstance
                             ->scenes[_appState.gameInstance->activeSceneIndex]);
-
   _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
+
+  // Init ImGui
   _pImguiLayer =
       MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
@@ -57,11 +59,22 @@ std::expected<void, Error> App::Init() {
     FLOG_WARN("failed to initialize ImGui layer");
   }
 
+  // --- Assets ---
   _assetManager.SetLoader(&_appState.gameInstance->assetLoader);
   _appState.width = _appState.gameInstance->windowSpecs.width;
   _appState.height = _appState.gameInstance->windowSpecs.height;
-  _appState.clock.Start();
+
+  // First load pass (registers all handles)
   _assetManager.Sync();
+  FLOG_INFO("Initial asset sync complete");
+
+  // Start background file watcher thread
+  _assetManager.StartWatching();
+  FLOG_INFO("FileWatcher is now monitoring assets/");
+
+  // Start clock and finalize init
+  _appState.clock.Start();
+
   FLOG_INFO("application initialized successfully");
   return {};
 }
