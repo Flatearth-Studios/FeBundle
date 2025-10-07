@@ -40,6 +40,7 @@ public:
 
 private:
   std::expected<void, Error> checkAndResizeWindow();
+  std::expected<void, Error> canRunGameInstance();
   void dispatchEvents();
   void checkAndUpdateScene();
 

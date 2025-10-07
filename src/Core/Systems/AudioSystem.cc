@@ -22,7 +22,7 @@ void AudioSystem::Play(const assets::AssetHandle &handle, float32 volume) {
     return;
   }
 
-  auto bufferRes = loadWav(handle.path);
+  auto bufferRes = loadWav(handle.path.string());
   if (!bufferRes.has_value()) {
     FLOG_ERROR("could not load wav for path: {}", handle.path.string());
     return;

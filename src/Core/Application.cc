@@ -30,7 +30,7 @@ App::App(Game *gameInstance, bool logToFile, bool logToStdout)
 }
 
 App::~App() {
-  FLOG_TRACE("shutting down application");
+  FLOG_INFO("shutting down application");
   if (_pImguiLayer != nullptr) {
     _pImguiLayer->Shutdown();
     _pImguiLayer.reset();
@@ -40,6 +40,11 @@ App::~App() {
 std::expected<void, Error> App::Init() {
   if (auto res = _feWindow.Init(); !res.has_value()) {
     FLOG_ERROR("failed to initialize window");
+    return std::unexpected{res.error()};
+  }
+
+  if (auto res = canRunGameInstance(); !res.has_value()) {
+    FLOG_ERROR("game instance is malformed. Aborting");
     return std::unexpected{res.error()};
   }
 
@@ -160,6 +165,25 @@ std::expected<void, Error> App::checkAndResizeWindow() {
                                         _appState.width, _appState.height)) {
     FLOG_ERROR("game failed to resize");
     return std::unexpected{Error(ErrorName::ResizeWindow)};
+  }
+
+  return {};
+}
+
+std::expected<void, Error> App::canRunGameInstance() {
+  if (!_appState.gameInstance->Initialize) {
+    FLOG_ERROR("game function callback undefined: Initialize");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
+  }
+
+  if (!_appState.gameInstance->Update) {
+    FLOG_ERROR("game function callback undefined: Update");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
+  }
+
+  if (!_appState.gameInstance->OnResize) {
+    FLOG_ERROR("game function callback undefined: OnResize");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
 
   return {};

@@ -1,10 +1,10 @@
 #define FE_DEBUG
 #include <FeBundle/Core/Application.hpp>
+#include <FeBundle/Core/Commands/AudioCommands.hpp>
 #include <FeBundle/Core/Entrypoint.hpp>
 #include <FeBundle/Core/GameTypes.hpp>
 #include <FeBundle/Core/Input/Inputs.hpp>
 #include <FeBundle/Core/Logger.hpp>
-#include <FeBundle/Core/Commands/AudioCommands.hpp>
 #include <FeBundle/Core/Scene/Components.hpp>
 #include <FeBundle/Core/Scene/Entity.hpp>
 #include <FeBundle/Core/Scene/Scene.hpp>
@@ -150,9 +150,10 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
     return true;
   };
 
+  outGame.OnResize = [](Game &g, uint32 w, uint32 h) -> bool { return true; };
+
   return {};
 }
-
 
 int main() {
   Game gameInstance;
@@ -178,7 +179,7 @@ int main() {
 
       gameInstance.pBridge->PostCommand("PlaySound", &cmd);
       FLOG_INFO("Playing sound from entity {}", entity);
-      break; 
+      break;
     }
   }
 
@@ -190,4 +191,3 @@ int main() {
 
   return 0;
 }
-
