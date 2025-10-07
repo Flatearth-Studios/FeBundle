@@ -16,6 +16,7 @@ enum class Component {
   BoxCollider,
   CircleCollider,
   Transform,
+  Audio,
   Texture,
   Sprite,
 };
@@ -142,6 +143,17 @@ struct Sprite : public IComponent {
   Sprite() {}
   Sprite(uint64 id, float32 width, float32 height)
     : id(id), width(width), height(height) {}
+};
+
+struct Audio : public IComponent {
+  enum Component Component() const override {
+    return type;
+  }
+
+  static constexpr enum Component type = Component::Audio;
+  assets::AssetHandle assetHandle;
+
+  Audio() {}
 };
 
 }

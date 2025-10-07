@@ -53,7 +53,7 @@ std::expected<void, Error> FeRenderer::Init() {
         auto *asset = evt.asset;
         const auto type = evt.assetType;
         if (type != assets::AssetType::Texture) {
-          return std::unexpected{Error(ErrorName::BadAsset)};
+          return {};
         }
 
         auto *texture = static_cast<assets::Texture *>(asset);

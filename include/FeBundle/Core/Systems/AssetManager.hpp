@@ -55,6 +55,7 @@ private:
   void firstRun();
 
   static std::expected<IAssetPtr, Error> textureLoader(const string &path);
+  static std::expected<IAssetPtr, Error> audioLoader(const string &path);
 
 };
 

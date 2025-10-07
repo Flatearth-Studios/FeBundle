@@ -4,6 +4,7 @@
 #include <FeBundle/Core/GameTypes.hpp>
 #include <FeBundle/Core/Input/Inputs.hpp>
 #include <FeBundle/Core/Logger.hpp>
+#include <FeBundle/Core/Commands/AudioCommands.hpp>
 #include <FeBundle/Core/Scene/Components.hpp>
 #include <FeBundle/Core/Scene/Entity.hpp>
 #include <FeBundle/Core/Scene/Scene.hpp>
@@ -66,6 +67,9 @@ static scene::Scene makeLevel2(Game &outGame) {
   input.keyMap[core::input::Key::D] = false;
 
   scene::Kinematic kin;
+  scene::Audio audio;
+  audio.assetHandle = outGame.assetLoader.LoadFor(e, assets::AssetType::Audio,
+                                                  "assets/bgm.wav");
   kin.lastSafePos = {transform.x, transform.y};
 
   scene.AddComponent<scene::Transform>(e, transform);
@@ -73,7 +77,7 @@ static scene::Scene makeLevel2(Game &outGame) {
   scene.AddComponent<scene::Input>(e, input);
   scene.AddComponent<scene::BoxCollider>(e, collider);
   scene.AddComponent<scene::Kinematic>(e, kin);
-
+  scene.AddComponent<scene::Audio>(e, audio);
   return scene;
 }
 
@@ -149,6 +153,7 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   return {};
 }
 
+
 int main() {
   Game gameInstance;
   auto res = febundle::CreateGame(gameInstance);
@@ -159,6 +164,25 @@ int main() {
     return -2;
   }
 
+  // Get the active scene (level 1 at start)
+  auto &scene = gameInstance.scenes[gameInstance.activeSceneIndex];
+
+  // Find an entity that has an Audio component
+  for (auto &[entity, _] : scene.AccessAll()) {
+    if (auto *audio = scene.GetComponent<scene::Audio>(entity)) {
+      // Build the play command directly from the component
+      febundle::commands::PlaySoundCommand cmd{
+          .assetHandle = audio->assetHandle,
+          .volume = 1.0f,
+      };
+
+      gameInstance.pBridge->PostCommand("PlaySound", &cmd);
+      FLOG_INFO("Playing sound from entity {}", entity);
+      break; 
+    }
+  }
+
+  // --- Run the game loop ---
   if (auto res = app.Run(); !res.has_value()) {
     LOG_ERROR("Application did not exit gracefully");
     return -1;
@@ -166,3 +190,4 @@ int main() {
 
   return 0;
 }
+

@@ -1,9 +1,10 @@
+#include "FeBundle/Core/Assets/Audio.hpp"
 #define FE_DEBUG
-#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
-#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Errors.hpp"
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Logger.hpp"
 #include "FeBundle/Core/Memory/Memory.hpp"
 #include "FeBundle/Core/Systems/AssetLoader.hpp"
@@ -16,6 +17,7 @@ namespace febundle::systems {
 
 AssetManager::AssetManager(core::events::EventBus &evtBus) : _eventBus(evtBus) {
   _loaderImplementations.emplace(assets::AssetType::Texture, textureLoader);
+  _loaderImplementations.emplace(assets::AssetType::Audio, audioLoader);
 }
 
 AssetManager::~AssetManager() {
@@ -26,9 +28,8 @@ AssetManager::~AssetManager() {
   _pAssetLoader = nullptr;
 }
 
-
-void AssetManager::SetLoader(AssetLoader *pAl) { 
-  _pAssetLoader = pAl; 
+void AssetManager::SetLoader(AssetLoader *pAl) {
+  _pAssetLoader = pAl;
   _fileWatcher.SetLoader(pAl);
 }
 
@@ -48,7 +49,6 @@ void AssetManager::StartWatching() {
   watcherStarted = true;
   FLOG_INFO("FileWatcher started");
 }
-
 
 void AssetManager::Sync() {
   if (_pAssetLoader == nullptr) {
@@ -76,10 +76,10 @@ void AssetManager::Sync() {
     reg.badAssets.erase(handle);
 
     core::events::AssetLoadEvent evt{
-      .eventKind = core::events::AssetEventKind::Reload,
-      .assetHandle = handle,
-      .assetType = handle.type,
-      .asset = reg.assets[handle].get(),
+        .eventKind = core::events::AssetEventKind::Reload,
+        .assetHandle = handle,
+        .assetType = handle.type,
+        .asset = reg.assets[handle].get(),
     };
 
     FLOG_INFO("firing new AssetLoadEvent");
@@ -166,5 +166,9 @@ AssetManager::textureLoader(const string &path) {
       memory::Tag::AssetManager, surf);
 }
 
+std::expected<IAssetPtr, Error> AssetManager::audioLoader(const string &path) {
+  return memory::MakeUniquePoly<assets::IAsset, assets::Audio>(
+      memory::Tag::AssetManager);
+}
 
 } // namespace febundle::systems

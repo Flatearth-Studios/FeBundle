@@ -4,6 +4,7 @@
 #include "FeBundle/Core/Scene/Scene.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Window/Window.hpp"
+#include "FeBundle/Core/GameBridge.hpp"
 #include <functional>
 
 namespace febundle {
@@ -17,6 +18,7 @@ struct Game {
   std::vector<scene::Scene> scenes;
   systems::CollisionSystem collisionSystem;
   systems::AssetLoader assetLoader;
+  GameBridge *pBridge;
   std::size_t activeSceneIndex;
 
   std::function<bool(struct Game &)> Initialize;

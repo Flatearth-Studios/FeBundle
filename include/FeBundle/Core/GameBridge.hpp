@@ -1,0 +1,34 @@
+#ifndef INCLUDE_FEBUNDLE_CORE_GAME_BRIDGE_HPP_
+#define INCLUDE_FEBUNDLE_CORE_GAME_BRIDGE_HPP_
+
+#include "FeBundle/Core/Defines.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
+#include <functional>
+
+namespace febundle {
+
+class GameBridge {
+public:
+  using CommandFn = std::function<void(void *)>;
+
+  virtual ~GameBridge() = default;
+  virtual void PostCommand(const string &name, void *payload) = 0;
+  // virtual void Post(const string &name, std::any payload) = 0;
+  // virtual void Enqueue(const string &name, std::function<void()> fn) = 0;
+};
+
+class GameBridgeImpl : public GameBridge {
+public:
+  explicit GameBridgeImpl(core::events::EventBus &evtBus);
+
+  void PostCommand(const string &name, void *payload) override;
+  // void Post(const string &name, std::any payload) override;
+  // void Enqueue(const string &name, std::function<void()> fn) override;
+
+private:
+  core::events::EventBus &_eventBus;
+};
+
+}
+
+#endif // INCLUDE_FEBUNDLE_CORE_GAME_BRIDGE_HPP_

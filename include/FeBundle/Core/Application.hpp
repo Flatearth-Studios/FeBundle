@@ -2,8 +2,10 @@
 #define INCLUDE_FEBUNDLE_CORE_APPLICATION_HPP_
 
 #include "Clock.hpp"
+#include "FeBundle/Core/GameBridge.hpp"
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "FeBundle/Core/Systems/AssetManager.hpp"
+#include "FeBundle/Core/Systems/AudioSystem.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include "FeBundle/Core/Events/EventBus.hpp"
@@ -38,17 +40,21 @@ public:
 
 private:
   std::expected<void, Error> checkAndResizeWindow();
+  void dispatchEvents();
+  void checkAndUpdateScene();
 
 private:
   static ApplicationState _appState;
+  core::events::EventBus _eventBus;
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;
   systems::InputManager _inputManager;
   systems::AssetManager _assetManager;
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
+  systems::AudioSystem _audioSystem;
   std::size_t _previousSceneIndex;
-  core::events::EventBus _eventBus;
+  std::unique_ptr<GameBridge, memory::PolyDeleter<GameBridge>> _pBridge;
 };
 
 } // namespace febundle
