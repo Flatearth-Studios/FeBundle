@@ -3,6 +3,7 @@
 
 #include "FeBundle/Core/Defines.hpp"
 #include <SDL3/SDL_audio.h>
+#include <mutex>
 #include <thread>
 
 namespace febundle::core::audio {
