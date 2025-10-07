@@ -53,7 +53,9 @@ public:
     if (!res) {
       return std::unexpected{res.error()};
     }
-    res.value()->Push(evt);
+
+    EventQueue<Event> *queue = res.value();
+    queue->Push(evt);
     return {};
   }
 

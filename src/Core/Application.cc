@@ -1,11 +1,13 @@
-#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
-#include "FeBundle/Core/Systems/InputManager.hpp"
+#include "FeBundle/Core/Events/GameCommandEvent.hpp"
 #define FE_DEBUG
 #include "FeBundle/Core/Application.hpp"
+#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
+#include "FeBundle/Core/GameBridge.hpp"
 #include "FeBundle/Core/Logger.hpp"
 #include "FeBundle/Core/Memory/Memory.hpp"
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "FeBundle/Core/Renderer/Renderer.hpp"
+#include "FeBundle/Core/Systems/InputManager.hpp"
 #include <SDL3/SDL_events.h>
 
 namespace febundle {
@@ -16,14 +18,19 @@ App::App(Game *gameInstance, bool logToFile, bool logToStdout)
     : _feWindow(gameInstance->windowSpecs), _assetManager(_eventBus),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
                                memory::Tag::Renderer, _feWindow, _eventBus))
-                     .value()) {
+                     .value()),
+      _audioSystem(_eventBus),
+      _pBridge(std::move(memory::MakeUniquePoly<GameBridge, GameBridgeImpl>(
+                             memory::Tag::Application, _eventBus))
+                   .value()) {
 
   ENABLE_FILE_LOGGING(logToFile);
   _appState.gameInstance = gameInstance;
+  _appState.gameInstance->pBridge = _pBridge.get();
 }
 
 App::~App() {
-  FLOG_TRACE("shutting down application");
+  FLOG_INFO("shutting down application");
   if (_pImguiLayer != nullptr) {
     _pImguiLayer->Shutdown();
     _pImguiLayer.reset();
@@ -36,6 +43,11 @@ std::expected<void, Error> App::Init() {
     return std::unexpected{res.error()};
   }
 
+  if (auto res = canRunGameInstance(); !res.has_value()) {
+    FLOG_ERROR("game instance is malformed. Aborting");
+    return std::unexpected{res.error()};
+  }
+
   if (!_appState.gameInstance->Initialize(*_appState.gameInstance)) {
     FLOG_ERROR("could not initialize game instance");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
@@ -45,11 +57,18 @@ std::expected<void, Error> App::Init() {
     FLOG_ERROR("failed to initialize renderer");
     return std::unexpected{res.error()};
   }
-  // Sets the scene for the renderer to render
+
+  if (auto res = _audioSystem.Init(); !res.has_value()) {
+    FLOG_ERROR("failed to initialize audio system");
+    return std::unexpected{res.error()};
+  }
+
+  // Bind renderer to initial scene
   _pRenderer->SetScene(&_appState.gameInstance
                             ->scenes[_appState.gameInstance->activeSceneIndex]);
-
   _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
+
+  // Init ImGui
   _pImguiLayer =
       MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
@@ -57,11 +76,22 @@ std::expected<void, Error> App::Init() {
     FLOG_WARN("failed to initialize ImGui layer");
   }
 
+  // --- Assets ---
   _assetManager.SetLoader(&_appState.gameInstance->assetLoader);
   _appState.width = _appState.gameInstance->windowSpecs.width;
   _appState.height = _appState.gameInstance->windowSpecs.height;
-  _appState.clock.Start();
+
+  // First load pass (registers all handles)
   _assetManager.Sync();
+  FLOG_INFO("Initial asset sync complete");
+
+  // Start background file watcher thread
+  _assetManager.StartWatching();
+  FLOG_INFO("FileWatcher is now monitoring assets/");
+
+  // Start clock and finalize init
+  _appState.clock.Start();
+
   FLOG_INFO("application initialized successfully");
   return {};
 }
@@ -93,12 +123,7 @@ std::expected<void, Error> App::Run() {
       break;
     }
 
-    if (_appState.gameInstance->activeSceneIndex != _previousSceneIndex) {
-      _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
-      _pRenderer->SetScene(
-          &_appState.gameInstance->scenes[_previousSceneIndex]);
-      FLOG_INFO("Renderer rebound to scene {}", _previousSceneIndex);
-    }
+    checkAndUpdateScene();
 
     if (auto res = checkAndResizeWindow(); !res.has_value()) {
       FLOG_ERROR("failed to resize window");
@@ -106,10 +131,7 @@ std::expected<void, Error> App::Run() {
     }
 
     _assetManager.Sync();
-    auto res = _eventBus.Dispatch<core::events::AssetLoadEvent>();
-    if (!res.has_value()) {
-      FLOG_WARN("failed to dispatch AssetLoadEvent for subscribers");
-    }
+    dispatchEvents();
 
     _pRenderer->BeginFrame();
     _pImguiLayer->BeginFrame();
@@ -146,6 +168,45 @@ std::expected<void, Error> App::checkAndResizeWindow() {
   }
 
   return {};
+}
+
+std::expected<void, Error> App::canRunGameInstance() {
+  if (!_appState.gameInstance->Initialize) {
+    FLOG_ERROR("game function callback undefined: Initialize");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
+  }
+
+  if (!_appState.gameInstance->Update) {
+    FLOG_ERROR("game function callback undefined: Update");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
+  }
+
+  if (!_appState.gameInstance->OnResize) {
+    FLOG_ERROR("game function callback undefined: OnResize");
+    return std::unexpected{Error(ErrorName::InitializeGameCallback)};
+  }
+
+  return {};
+}
+
+void App::dispatchEvents() {
+  auto loadEvtRes = _eventBus.Dispatch<core::events::AssetLoadEvent>();
+  if (!loadEvtRes.has_value()) {
+    FLOG_WARN("failed to dispatch AssetLoadEvent for subscribers");
+  }
+
+  auto gameCmdEvtRes = _eventBus.Dispatch<core::events::GameCommandEvent>();
+  if (!gameCmdEvtRes.has_value()) {
+    FLOG_WARN("failed to dispatch GameCommandEvent for subscribers");
+  }
+}
+
+void App::checkAndUpdateScene() {
+  if (_appState.gameInstance->activeSceneIndex != _previousSceneIndex) {
+    _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
+    _pRenderer->SetScene(&_appState.gameInstance->scenes[_previousSceneIndex]);
+    FLOG_INFO("Renderer rebound to scene {}", _previousSceneIndex);
+  }
 }
 
 } // namespace febundle

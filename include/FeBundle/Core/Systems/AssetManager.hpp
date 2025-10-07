@@ -6,6 +6,7 @@
 #include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Memory/Memory.hpp"
 #include "FeBundle/Core/Systems/AssetLoader.hpp"
+#include "FeBundle/Core/Systems/FileWatcher.hpp"
 #include <SDL3/SDL_render.h>
 #include <SDL3_image/SDL_image.h>
 #include <functional>
@@ -23,16 +24,19 @@ public:
    AssetManager(core::events::EventBus &evtBus);
   ~AssetManager();
 
-  void SetLoader(const AssetLoader *cpAl);
+  void SetLoader(AssetLoader *cpAl);
+  void StartWatching();
   void Sync();
   assets::IAsset *AssetOf(const assets::AssetHandle &ah);
 
 private:
   bool _initialized{false};
   uint64 _latestVersion{0};
-  const AssetLoader *_cpAssetLoader;
+  AssetLoader *_pAssetLoader;
   umap<assets::AssetType, AssetLoaderFn> _loaderImplementations;
   core::events::EventBus &_eventBus;
+  bool _firstRun{true};
+  FileWatcher _fileWatcher;
 
 private:
   struct typeRegistry {
@@ -48,8 +52,11 @@ private:
 
   std::expected<IAssetPtr, Error> loadImpl(const string &path,
                                            assets::AssetType type);
+  void firstRun();
 
   static std::expected<IAssetPtr, Error> textureLoader(const string &path);
+  static std::expected<IAssetPtr, Error> audioLoader(const string &path);
+
 };
 
 } // namespace febundle::systems

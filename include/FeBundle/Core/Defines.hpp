@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FEBUNDLE_CORE_DEFINES_HPP_
 #define INCLUDE_FEBUNDLE_CORE_DEFINES_HPP_
 
+#include <atomic>
 #include <cstdint>
 #include <format>
 #include <memory>

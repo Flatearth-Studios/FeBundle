@@ -23,6 +23,7 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Logger.hpp
     include/FeBundle/Core/Assets/Common.hpp
     include/FeBundle/Core/Assets/Texture.hpp
+    include/FeBundle/Core/Assets/Audio.hpp
     include/FeBundle/Core/Defines.hpp
     include/FeBundle/Core/Memory/Memory.hpp
     include/FeBundle/Core/Window/Window.hpp
@@ -32,14 +33,21 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Scene/Components.hpp
     include/FeBundle/Core/Scene/Store.hpp
     include/FeBundle/Core/Scene/Scene.hpp
+    include/FeBundle/Core/Audio/AudioMixer.hpp
+    include/FeBundle/Core/Audio/AudioMixer.hpp
     include/FeBundle/Core/Systems/InputManager.hpp
     include/FeBundle/Core/Systems/AssetManager.hpp
     include/FeBundle/Core/Systems/AssetLoader.hpp
+    include/FeBundle/Core/Systems/FileWatcher.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
+    include/FeBundle/Core/Systems/AudioSystem.hpp
+    include/FeBundle/Core/Events/GameCommandEvent.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
     include/FeBundle/Core/Events/EventBus.hpp
+    include/FeBundle/Core/Commands/AudioCommands.hpp
     include/FeBundle/Core/Events/AssetLoadEvent.hpp
     include/FeBundle/Core/Clock.hpp
+    include/FeBundle/Core/GameBridge.hpp
     include/FeBundle/Core/Math/Math.hpp
     include/FeBundle/Core/GameTypes.hpp
     include/FeBundle/Core/Entrypoint.hpp
@@ -56,9 +64,13 @@ set(FEBUNDLE_SOURCES
     src/Core/Scene/Scene.cc
     src/Core/Systems/InputManager.cc
     src/Core/Systems/AssetLoader.cc
+    src/Core/Systems/FileWatcher.cc
     src/Core/Systems/AssetManager.cc
+    src/Core/Audio/AudioMixer.cc
+    src/Core/Systems/AudioSystem.cc
     src/Core/Systems/CollisionSystem.cc
     src/Core/Clock.cc
+	src/Core/GameBridge.cc
     src/Core/Application.cc
 )
 
