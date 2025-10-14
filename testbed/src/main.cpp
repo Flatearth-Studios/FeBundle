@@ -1,4 +1,5 @@
 #define FE_DEBUG
+#include "imgui.h"
 #include <FeBundle/Core/Application.hpp>
 #include <FeBundle/Core/Commands/AudioCommands.hpp>
 #include <FeBundle/Core/Entrypoint.hpp>
@@ -53,6 +54,26 @@ static scene::Scene makeLevel1(Game &outGame) {
   return scene;
 }
 
+static scene::Scene makeUIScene(Game &outGame) {
+  scene::Scene uiScene(scene::SceneType::UI);
+
+  scene::Entity uiEntity = uiScene.Create();
+  scene::UI uiComp;
+
+  // Simple ImGui window for testing
+  uiComp.drawFn = []() {
+    ImGui::Begin("Test UI");
+    ImGui::Text("Hello from FeBundle UI Scene!");
+    if (ImGui::Button("Exit")) {
+      ImGui::Text("You pressed Exit!");
+    }
+    ImGui::End();
+  };
+
+  uiScene.AddComponent<scene::UI>(uiEntity, uiComp);
+  return uiScene;
+}
+
 std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   outGame.windowSpecs.height = 960;
   outGame.windowSpecs.width = 1280;
@@ -60,6 +81,7 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
 
   // push both levels into game
   outGame.scenes.push_back(makeLevel1(outGame));
+  outGame.scenes.push_back(makeUIScene(outGame));
 
   outGame.Initialize = [](Game &g) -> bool {
     // --- Collision response example ---
@@ -84,13 +106,14 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   };
 
   outGame.Update = [](Game &g, float32 deltaTime) -> bool {
-    auto &scene = g.scenes[0];
-    const auto entities = scene.AccessAll();
+    auto &world = g.scenes[0];
+    auto &ui = g.scenes[1]; // our UI scene
 
+    const auto entities = world.AccessAll();
     for (const auto &[e, comp] : entities) {
-      auto *transform = scene.GetComponent<scene::Transform>(e);
-      auto *input = scene.GetComponent<scene::Input>(e);
-      auto *kin = scene.GetComponent<scene::Kinematic>(e);
+      auto *transform = world.GetComponent<scene::Transform>(e);
+      auto *input = world.GetComponent<scene::Input>(e);
+      auto *kin = world.GetComponent<scene::Kinematic>(e);
       if (!input || !kin)
         continue;
 
@@ -107,8 +130,9 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
         transform->x += velocity * deltaTime;
     }
 
-    g.collisionSystem.Update(scene);
-    g.pBridge->RenderScene(scene);
+    g.collisionSystem.Update(world);
+    g.pBridge->RenderScene(world);
+    g.pBridge->RenderScene(ui);
     return true;
   };
 

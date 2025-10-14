@@ -2,6 +2,7 @@
 #include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Events/RenderEvents.hpp"
 #include "FeBundle/Core/Logger.hpp"
+#include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
 
 namespace febundle::systems {
@@ -41,7 +42,19 @@ void RenderSystem::renderWorld(const scene::Scene &scene) {
 }
 
 void RenderSystem::renderUI(const scene::Scene &scene) {
-  // TODO: implement UI system
+  using namespace scene;
+  for (auto &[entity, comps] : scene.AccessAll()) {
+    if (!comps.contains(scene::Component::UI)) {
+      continue;
+    } 
+
+    auto *ui = scene.GetComponent<scene::UI>(entity);
+    core::events::UIRenderEvent evt(std::move(ui->drawFn));
+
+    if (auto res = _eventBus.Push(evt); !res.has_value()) {
+      FLOG_ERROR("failed to register UIRenderEvent");
+    }
+  }
 }
 
 } // namespace febundle::systems

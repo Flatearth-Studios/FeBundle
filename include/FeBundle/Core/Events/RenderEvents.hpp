@@ -4,6 +4,7 @@
 #include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Math/Math.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
+#include <functional>
 
 namespace febundle::core::events {
 
@@ -28,7 +29,11 @@ struct WorldRenderEvent : RenderEvent {
     }
 };
 
-struct UIRenderEvent : RenderEvent {};
+struct UIRenderEvent : RenderEvent {
+  std::function<void()> drawFn;
+
+  UIRenderEvent(std::function<void()> fn) : drawFn(fn) {}
+};
 
 }
 

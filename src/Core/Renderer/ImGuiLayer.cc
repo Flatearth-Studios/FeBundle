@@ -1,12 +1,17 @@
 #define FE_DEBUG
-#include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
+#include "FeBundle/Core/Events/EventQueue.hpp"
+#include "FeBundle/Core/Events/RenderEvents.hpp"
 #include "FeBundle/Core/Logger.hpp"
+#include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include <SDL3/SDL_video.h>
 
 namespace febundle::renderer {
+
+ImGuiLayer::ImGuiLayer(core::events::EventBus &evtBus) : _eventBus(evtBus) {}
 
 std::expected<void, Error> ImGuiLayer::Init(SDL_Window *window,
                                             SDL_Renderer *renderer) {
@@ -36,6 +41,19 @@ std::expected<void, Error> ImGuiLayer::Init(SDL_Window *window,
     return std::unexpected{Error(ErrorName::ImGuiBackendInit)};
   }
 
+  core::events::EventSubscription<core::events::UIRenderEvent> subscription{
+      .subscriber = "ImGuiLayer",
+      .callback = [&](const core::events::UIRenderEvent &evt)
+          -> std::expected<void, Error> {
+        evt.drawFn();
+        return {};
+      },
+  };
+
+  if (auto res = _eventBus.Subscribe(subscription); !res.has_value()) {
+    FLOG_ERROR("failed to subscribe to UIRenderEvent");
+  }
+
   _initialized = true;
   _pRenderer = renderer;
   return {};
@@ -55,8 +73,13 @@ void ImGuiLayer::BeginFrame() {
 void ImGuiLayer::Render() {
   if (!_initialized || _pRenderer == nullptr) {
     FLOG_WARN("attempt to render ImGui layer but either no renderer exists or "
-             "layer is not initialized");
+              "layer is not initialized");
     return;
+  }
+
+  if (auto res = _eventBus.Dispatch<core::events::UIRenderEvent>();
+      !res.has_value()) {
+    FLOG_ERROR("failed to dispatch UIRenderEvents");
   }
 
   ImGui::Begin("FeBundle Stats");

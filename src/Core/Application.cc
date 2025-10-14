@@ -65,7 +65,8 @@ std::expected<void, Error> App::Init() {
 
   // Init ImGui
   _pImguiLayer =
-      MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
+      MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer, _eventBus)
+          .value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
   if (!res.has_value()) {
     FLOG_WARN("failed to initialize ImGui layer");
@@ -195,6 +196,5 @@ void App::dispatchEvents() {
     FLOG_WARN("failed to dispatch GameCommandEvent for subscribers");
   }
 }
-
 
 } // namespace febundle

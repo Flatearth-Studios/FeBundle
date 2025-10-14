@@ -17,7 +17,6 @@ private:
 
 private:
   core::events::EventBus &_eventBus;
-
 };
 
 }
