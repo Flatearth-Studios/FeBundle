@@ -43,41 +43,13 @@ static scene::Scene makeLevel1(Game &outGame) {
 
   // --- Obstacle setup ---
   scene::Transform t2(120.f, 120.f);
+  scene::Audio audio;
+  audio.assetHandle = outGame.assetLoader.LoadFor(e2, assets::AssetType::Audio,
+                                                  "assets/bgm.wav");
   scene.AddComponent<scene::Transform>(e2, t2);
   scene.AddComponent<scene::BoxCollider>(e2, collider);
+  scene.AddComponent<scene::Audio>(e2, audio);
 
-  return scene;
-}
-
-static scene::Scene makeLevel2(Game &outGame) {
-  scene::Scene scene;
-  scene::Entity e = scene.Create(); // player
-
-  scene::Transform transform(200.f, 200.f);
-  scene::Sprite sprite(e, 64, 64);
-  scene::Input input;
-  scene::BoxCollider collider(64, 64);
-
-  sprite.assetHandle = outGame.assetLoader.LoadFor(
-      e, assets::AssetType::Texture, "assets/player.png");
-
-  input.keyMap[core::input::Key::W] = false;
-  input.keyMap[core::input::Key::A] = false;
-  input.keyMap[core::input::Key::S] = false;
-  input.keyMap[core::input::Key::D] = false;
-
-  scene::Kinematic kin;
-  scene::Audio audio;
-  audio.assetHandle = outGame.assetLoader.LoadFor(e, assets::AssetType::Audio,
-                                                  "assets/bgm.wav");
-  kin.lastSafePos = {transform.x, transform.y};
-
-  scene.AddComponent<scene::Transform>(e, transform);
-  scene.AddComponent<scene::Sprite>(e, sprite);
-  scene.AddComponent<scene::Input>(e, input);
-  scene.AddComponent<scene::BoxCollider>(e, collider);
-  scene.AddComponent<scene::Kinematic>(e, kin);
-  scene.AddComponent<scene::Audio>(e, audio);
   return scene;
 }
 
@@ -88,15 +60,13 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
 
   // push both levels into game
   outGame.scenes.push_back(makeLevel1(outGame));
-  outGame.scenes.push_back(makeLevel2(outGame));
-  outGame.activeSceneIndex = 0; // start on level1
 
   outGame.Initialize = [](Game &g) -> bool {
     // --- Collision response example ---
 
     g.collisionSystem.OnCollisionEnter(
         [&](const febundle::systems::CollisionEvent &evt) {
-          auto &scene = g.scenes[g.activeSceneIndex];
+          auto &scene = g.scenes[0];
 
           // Rollback only entities that are kinematic (e.g. player)
           for (auto e : {evt.e1, evt.e2}) {
@@ -114,7 +84,7 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   };
 
   outGame.Update = [](Game &g, float32 deltaTime) -> bool {
-    auto &scene = g.scenes[g.activeSceneIndex];
+    auto &scene = g.scenes[0];
     const auto entities = scene.AccessAll();
 
     for (const auto &[e, comp] : entities) {
@@ -138,15 +108,7 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
     }
 
     g.collisionSystem.Update(scene);
-
-    // Example: swap level when player reaches x > 300
-    auto *player =
-        scene.GetComponent<scene::Transform>(0); // assume entity 0 = player
-    if (player && player->x > 300 && g.activeSceneIndex == 0) {
-      g.activeSceneIndex = 1;
-      FLOG_INFO("Switched to level 2!");
-    }
-
+    g.pBridge->RenderScene(scene);
     return true;
   };
 
@@ -166,7 +128,7 @@ int main() {
   }
 
   // Get the active scene (level 1 at start)
-  auto &scene = gameInstance.scenes[gameInstance.activeSceneIndex];
+  auto &scene = gameInstance.scenes[0];
 
   // Find an entity that has an Audio component
   for (auto &[entity, _] : scene.AccessAll()) {

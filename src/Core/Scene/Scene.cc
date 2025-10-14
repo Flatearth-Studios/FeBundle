@@ -1,15 +1,16 @@
+#define FE_DEBUG
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
-#define FE_DEBUG
 #include "FeBundle/Core/Scene/Scene.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 
 namespace febundle::scene {
 
-Scene::Scene() {
+Scene::Scene(enum SceneType type) : _type(type) {
   registerStore<Transform>();
   registerStore<Sprite>();
   registerStore<Input>();
+  registerStore<Audio>();
 }
 
 Entity Scene::Create() { return _next++; }
@@ -18,6 +19,11 @@ void Scene::Destroy(Entity e) {
   RemoveComponent<Transform>(e);
   RemoveComponent<Sprite>(e);
   RemoveComponent<Input>(e);
+  RemoveComponent<Audio>(e);
+}
+
+enum SceneType Scene::Type() const {
+  return _type;
 }
 
 const umap<Entity, uset<Component>> &Scene::AccessAll() const {
