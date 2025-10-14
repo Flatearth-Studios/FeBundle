@@ -52,6 +52,8 @@ std::expected<void, Error> App::Init() {
     FLOG_ERROR("could not initialize game instance");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
+  _appState.gameInstance->isRunning = true;
+  _appState.gameInstance->isSuspended = false;
 
   if (auto res = _pRenderer->Init(); !res.has_value()) {
     FLOG_ERROR("failed to initialize renderer");
@@ -63,14 +65,10 @@ std::expected<void, Error> App::Init() {
     return std::unexpected{res.error()};
   }
 
-  // Bind renderer to initial scene
-  _pRenderer->SetScene(&_appState.gameInstance
-                            ->scenes[_appState.gameInstance->activeSceneIndex]);
-  _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
-
   // Init ImGui
   _pImguiLayer =
-      MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer).value();
+      MakeUnique<renderer::ImGuiLayer>(memory::Tag::Renderer, _eventBus)
+          .value();
   auto res = _pImguiLayer->Init(_feWindow.Handle(), _pRenderer->Handle());
   if (!res.has_value()) {
     FLOG_WARN("failed to initialize ImGui layer");
@@ -109,8 +107,14 @@ std::expected<void, Error> App::Run() {
       _feWindow.ProcessEvent(event);
       _pImguiLayer->ProcessEvent(event);
       inputEvent = _inputManager.ProcessEvent(event);
-      _appState.gameInstance->scenes[_appState.gameInstance->activeSceneIndex]
-          .ProcessInputEvent(inputEvent);
+      for (auto &scene : _appState.gameInstance->scenes) {
+        // TODO: rethink this loop
+        scene.ProcessInputEvent(inputEvent);
+      }
+    }
+
+    if (!_appState.gameInstance->isRunning) {
+      break;
     }
 
     auto now = _appState.clock.NowTime();
@@ -122,8 +126,6 @@ std::expected<void, Error> App::Run() {
       FLOG_ERROR("game failed to update");
       break;
     }
-
-    checkAndUpdateScene();
 
     if (auto res = checkAndResizeWindow(); !res.has_value()) {
       FLOG_ERROR("failed to resize window");
@@ -137,7 +139,7 @@ std::expected<void, Error> App::Run() {
     _pImguiLayer->BeginFrame();
 
     if (auto res = _pRenderer->Render(); !res.has_value()) {
-      FLOG_ERROR("renderer failed to render scene");
+      FLOG_ERROR("renderer failed to render");
       return std::unexpected{res.error()};
     }
 
@@ -198,14 +200,6 @@ void App::dispatchEvents() {
   auto gameCmdEvtRes = _eventBus.Dispatch<core::events::GameCommandEvent>();
   if (!gameCmdEvtRes.has_value()) {
     FLOG_WARN("failed to dispatch GameCommandEvent for subscribers");
-  }
-}
-
-void App::checkAndUpdateScene() {
-  if (_appState.gameInstance->activeSceneIndex != _previousSceneIndex) {
-    _previousSceneIndex = _appState.gameInstance->activeSceneIndex;
-    _pRenderer->SetScene(&_appState.gameInstance->scenes[_previousSceneIndex]);
-    FLOG_INFO("Renderer rebound to scene {}", _previousSceneIndex);
   }
 }
 

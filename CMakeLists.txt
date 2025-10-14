@@ -38,10 +38,12 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Systems/InputManager.hpp
     include/FeBundle/Core/Systems/AssetManager.hpp
     include/FeBundle/Core/Systems/AssetLoader.hpp
+    include/FeBundle/Core/Systems/RenderSystem.hpp
     include/FeBundle/Core/Systems/FileWatcher.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Systems/AudioSystem.hpp
     include/FeBundle/Core/Events/GameCommandEvent.hpp
+    include/FeBundle/Core/Events/RenderEvents.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
     include/FeBundle/Core/Events/EventBus.hpp
     include/FeBundle/Core/Commands/AudioCommands.hpp
@@ -66,6 +68,7 @@ set(FEBUNDLE_SOURCES
     src/Core/Systems/AssetLoader.cc
     src/Core/Systems/FileWatcher.cc
     src/Core/Systems/AssetManager.cc
+    src/Core/Systems/RenderSystem.cc
     src/Core/Audio/AudioMixer.cc
     src/Core/Systems/AudioSystem.cc
     src/Core/Systems/CollisionSystem.cc

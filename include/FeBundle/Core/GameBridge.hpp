@@ -3,6 +3,8 @@
 
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Events/EventBus.hpp"
+#include "FeBundle/Core/Scene/Scene.hpp"
+#include "FeBundle/Core/Systems/RenderSystem.hpp"
 #include <functional>
 
 namespace febundle {
@@ -13,6 +15,7 @@ public:
 
   virtual ~GameBridge() = default;
   virtual void PostCommand(const string &name, void *payload) = 0;
+  virtual void RenderScene(const scene::Scene &scene) = 0;
   // virtual void Post(const string &name, std::any payload) = 0;
   // virtual void Enqueue(const string &name, std::function<void()> fn) = 0;
 };
@@ -22,11 +25,13 @@ public:
   explicit GameBridgeImpl(core::events::EventBus &evtBus);
 
   void PostCommand(const string &name, void *payload) override;
+  void RenderScene(const scene::Scene &scene) override;
   // void Post(const string &name, std::any payload) override;
   // void Enqueue(const string &name, std::function<void()> fn) override;
 
 private:
   core::events::EventBus &_eventBus;
+  systems::RenderSystem _renderSystem;
 };
 
 }

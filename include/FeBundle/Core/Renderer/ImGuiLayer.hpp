@@ -3,6 +3,7 @@
 
 #include "FeBundle/Core/Errors.hpp"
 #include "FeBundle/Core/Defines.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
 
@@ -10,12 +11,15 @@ namespace febundle::renderer {
 
 class ImGuiLayer {
 public:
+  explicit ImGuiLayer(core::events::EventBus &evtBus);
   std::expected<void, Error> Init(SDL_Window *window, SDL_Renderer *renderer);
   void BeginFrame();
   void Render();
   void Shutdown();
   bool ProcessEvent(const SDL_Event &e);
+
 private:
+  core::events::EventBus &_eventBus;
   bool _initialized{false};
   SDL_Renderer *_pRenderer;
 };

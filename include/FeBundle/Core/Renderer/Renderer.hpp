@@ -3,10 +3,8 @@
 
 #include "../Window/Window.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
-#include "FeBundle/Core/Events/AssetLoadEvent.hpp"
 #include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
-#include "FeBundle/Core/Scene/Scene.hpp"
 
 #include <SDL3/SDL_render.h>
 
@@ -19,7 +17,6 @@ public:
   std::expected<void, Error> Init();
   std::expected<void, Error> Render();
   SDL_Renderer *Handle();
-  void SetScene(const scene::Scene *scene);
   void Resize(uint32 width, uint32 height);
   void BeginFrame();
   void EndFrame();
@@ -30,12 +27,12 @@ private:
   bool renderSprite(const scene::Transform &transform,
                     const scene::Sprite &sprite);
 
+  void subscribeToEvents();
   void cleanup();
 
 private:
   SDL_Renderer *_pRenderer;
   window::Window &_feWindow;
-  const scene::Scene *_cpScene;
   static bool _sInitialized;
   std::size_t _texturesLoaded{0};
   core::events::EventBus &_eventBus;

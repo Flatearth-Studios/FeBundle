@@ -42,7 +42,6 @@ private:
   std::expected<void, Error> checkAndResizeWindow();
   std::expected<void, Error> canRunGameInstance();
   void dispatchEvents();
-  void checkAndUpdateScene();
 
 private:
   static ApplicationState _appState;
@@ -54,7 +53,6 @@ private:
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
   systems::AudioSystem _audioSystem;
-  std::size_t _previousSceneIndex;
   std::unique_ptr<GameBridge, memory::PolyDeleter<GameBridge>> _pBridge;
 };
 

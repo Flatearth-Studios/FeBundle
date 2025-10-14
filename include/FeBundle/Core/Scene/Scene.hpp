@@ -5,15 +5,19 @@
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Entity.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
-#include "FeBundle/Core/Systems/AssetLoader.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include <typeindex>
 
 namespace febundle::scene {
 
+enum class SceneType {
+  World,
+  UI,
+};
+
 class Scene {
 public:
-  Scene();
+  Scene(SceneType type = SceneType::World);
   ~Scene() = default;
 
   Scene(const Scene&) = delete;
@@ -24,6 +28,7 @@ public:
 
   Entity Create();
   void Destroy(Entity e);
+  SceneType Type() const;
 
   const umap<Entity, uset<Component>> &AccessAll() const;
   void ProcessInputEvent(const systems::InputEvent *ie);
@@ -102,6 +107,7 @@ private:
       _stores;
   umap<Entity, uset<Component>> _entityComponents;
   Entity _next{0};
+  enum SceneType _type;
 };
 
 } // namespace febundle::scene

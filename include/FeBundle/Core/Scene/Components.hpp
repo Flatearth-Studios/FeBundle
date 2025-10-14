@@ -19,6 +19,7 @@ enum class Component {
   Audio,
   Texture,
   Sprite,
+  UI,
 };
 
 enum class ShapeType {
@@ -154,6 +155,13 @@ struct Audio : public IComponent {
   assets::AssetHandle assetHandle;
 
   Audio() {}
+};
+
+struct UI : public IComponent {
+    enum Component Component() const override { return Component::UI; }
+
+    std::function<void()> drawFn;
+    int zIndex{0};
 };
 
 }
