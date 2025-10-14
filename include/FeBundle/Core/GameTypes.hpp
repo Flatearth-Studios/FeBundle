@@ -14,6 +14,8 @@ const int64 MaxScenes = 300;
 struct Game {
   window::WindowSpecs windowSpecs;
 
+  bool isRunning{false}, isSuspended{true};
+
   void *pState = nullptr;
   std::vector<scene::Scene> scenes;
   systems::CollisionSystem collisionSystem;

@@ -52,6 +52,8 @@ std::expected<void, Error> App::Init() {
     FLOG_ERROR("could not initialize game instance");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
+  _appState.gameInstance->isRunning = true;
+  _appState.gameInstance->isSuspended = false;
 
   if (auto res = _pRenderer->Init(); !res.has_value()) {
     FLOG_ERROR("failed to initialize renderer");
@@ -109,6 +111,10 @@ std::expected<void, Error> App::Run() {
         // TODO: rethink this loop
         scene.ProcessInputEvent(inputEvent);
       }
+    }
+
+    if (!_appState.gameInstance->isRunning) {
+      break;
     }
 
     auto now = _appState.clock.NowTime();

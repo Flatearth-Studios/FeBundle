@@ -55,23 +55,66 @@ static scene::Scene makeLevel1(Game &outGame) {
 }
 
 static scene::Scene makeUIScene(Game &outGame) {
-  scene::Scene uiScene(scene::SceneType::UI);
+    scene::Scene uiScene(scene::SceneType::UI);
+    scene::Entity uiEntity = uiScene.Create();
+    scene::UI uiComp;
 
-  scene::Entity uiEntity = uiScene.Create();
-  scene::UI uiComp;
+    uiComp.drawFn = [&]() {
+        // ESC toggles pause
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+            outGame.isSuspended = !outGame.isSuspended;
 
-  // Simple ImGui window for testing
-  uiComp.drawFn = []() {
-    ImGui::Begin("Test UI");
-    ImGui::Text("Hello from FeBundle UI Scene!");
-    if (ImGui::Button("Exit")) {
-      ImGui::Text("You pressed Exit!");
-    }
-    ImGui::End();
-  };
+        if (!outGame.isSuspended)
+            return; // Don’t draw pause menu if running
 
-  uiScene.AddComponent<scene::UI>(uiEntity, uiComp);
-  return uiScene;
+        const ImGuiViewport* vp = ImGui::GetMainViewport();
+        ImVec2 center = vp->GetCenter();
+
+        ImGui::SetNextWindowBgAlpha(0.45f);
+        ImGui::SetNextWindowPos(ImVec2(center.x - 150, center.y - 100),
+                                ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(300, 200));
+
+        ImGui::Begin("Pause Menu", nullptr,
+                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoSavedSettings);
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.95f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.22f, 0.35f, 0.8f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                              ImVec4(0.30f, 0.36f, 0.56f, 0.9f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                              ImVec4(0.45f, 0.50f, 0.70f, 1.0f));
+
+        ImGui::SetWindowFontScale(1.4f);
+        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - ImGui::CalcTextSize("PAUSED").x) * 0.5f);
+        ImGui::Text("PAUSED");
+        ImGui::SetWindowFontScale(1.0f);
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Resume Game", ImVec2(250, 40))) {
+            outGame.isSuspended = false;
+            FLOG_INFO("Game resumed");
+        }
+
+        if (ImGui::Button("Restart Level", ImVec2(250, 40))) {
+            FLOG_INFO("Level restart requested");
+            // future: trigger scene reload event here
+        }
+
+        if (ImGui::Button("Exit Game", ImVec2(250, 40))) {
+            outGame.isRunning = false;
+            FLOG_INFO("Game exiting");
+        }
+
+        ImGui::PopStyleColor(4);
+        ImGui::End();
+    };
+
+    uiScene.AddComponent<scene::UI>(uiEntity, uiComp);
+    return uiScene;
 }
 
 std::expected<void, Error> febundle::CreateGame(Game &outGame) {
@@ -109,25 +152,28 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
     auto &world = g.scenes[0];
     auto &ui = g.scenes[1]; // our UI scene
 
-    const auto entities = world.AccessAll();
-    for (const auto &[e, comp] : entities) {
-      auto *transform = world.GetComponent<scene::Transform>(e);
-      auto *input = world.GetComponent<scene::Input>(e);
-      auto *kin = world.GetComponent<scene::Kinematic>(e);
-      if (!input || !kin)
-        continue;
+    if (!g.isSuspended) {
+      const auto entities = world.AccessAll();
+      for (const auto &[e, comp] : entities) {
+        auto *transform = world.GetComponent<scene::Transform>(e);
+        auto *input = world.GetComponent<scene::Input>(e);
+        auto *kin = world.GetComponent<scene::Kinematic>(e);
+        if (!input || !kin)
+          continue;
 
-      const float32 velocity = 70.0f;
-      kin->lastSafePos = {transform->x, transform->y};
+        const float32 velocity = 70.0f;
+        kin->lastSafePos = {transform->x, transform->y};
 
-      if (input->keyMap[core::input::Key::W])
-        transform->y -= velocity * deltaTime;
-      if (input->keyMap[core::input::Key::A])
-        transform->x -= velocity * deltaTime;
-      if (input->keyMap[core::input::Key::S])
-        transform->y += velocity * deltaTime;
-      if (input->keyMap[core::input::Key::D])
-        transform->x += velocity * deltaTime;
+        if (input->keyMap[core::input::Key::W])
+          transform->y -= velocity * deltaTime;
+        if (input->keyMap[core::input::Key::A])
+          transform->x -= velocity * deltaTime;
+        if (input->keyMap[core::input::Key::S])
+          transform->y += velocity * deltaTime;
+        if (input->keyMap[core::input::Key::D])
+          transform->x += velocity * deltaTime;
+      }
+      g.collisionSystem.Update(world);
     }
 
     g.collisionSystem.Update(world);
