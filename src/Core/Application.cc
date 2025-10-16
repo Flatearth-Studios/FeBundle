@@ -16,12 +16,13 @@ ApplicationState App::_appState{};
 
 App::App(Game *gameInstance, bool logToFile, bool logToStdout)
     : _feWindow(gameInstance->windowSpecs), _assetManager(_eventBus),
+      _uiManager(_eventBus),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
                                memory::Tag::Renderer, _feWindow, _eventBus))
                      .value()),
       _audioSystem(_eventBus),
       _pBridge(std::move(memory::MakeUniquePoly<GameBridge, GameBridgeImpl>(
-                             memory::Tag::Application, _eventBus))
+                             memory::Tag::Application, _eventBus, _uiManager))
                    .value()) {
 
   ENABLE_FILE_LOGGING(logToFile);

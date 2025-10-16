@@ -6,6 +6,7 @@
 #include "FeBundle/Core/Scene/Entity.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
+#include "stduuid.h"
 #include <typeindex>
 
 namespace febundle::scene {
@@ -29,6 +30,7 @@ public:
   Entity Create();
   void Destroy(Entity e);
   SceneType Type() const;
+  string SceneId() const;
 
   const umap<Entity, uset<Component>> &AccessAll() const;
   void ProcessInputEvent(const systems::InputEvent *ie);
@@ -108,6 +110,8 @@ private:
   umap<Entity, uset<Component>> _entityComponents;
   Entity _next{0};
   enum SceneType _type;
+
+  uuids::uuid _id;
 };
 
 } // namespace febundle::scene
