@@ -33,7 +33,8 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Scene/Components.hpp
     include/FeBundle/Core/Scene/Store.hpp
     include/FeBundle/Core/Scene/Scene.hpp
-    include/FeBundle/Core/Audio/AudioMixer.hpp
+    include/FeBundle/Core/UI/Widget.hpp
+    include/FeBundle/Core/UI/Button.hpp
     include/FeBundle/Core/Audio/AudioMixer.hpp
     include/FeBundle/Core/Systems/InputManager.hpp
     include/FeBundle/Core/Systems/AssetManager.hpp
@@ -42,6 +43,7 @@ set(FEBUNDLE_HEADERS
     include/FeBundle/Core/Systems/FileWatcher.hpp
     include/FeBundle/Core/Systems/CollisionSystem.hpp
     include/FeBundle/Core/Systems/AudioSystem.hpp
+    include/FeBundle/Core/Systems/UIManager.hpp
     include/FeBundle/Core/Events/GameCommandEvent.hpp
     include/FeBundle/Core/Events/RenderEvents.hpp
     include/FeBundle/Core/Events/EventQueue.hpp
@@ -71,12 +73,15 @@ set(FEBUNDLE_SOURCES
     src/Core/Systems/RenderSystem.cc
     src/Core/Audio/AudioMixer.cc
     src/Core/Systems/AudioSystem.cc
+    src/Core/Systems/UIManager.cc
     src/Core/Systems/CollisionSystem.cc
     src/Core/Clock.cc
+    src/Core/Game.cc
 	src/Core/GameBridge.cc
     src/Core/Application.cc
 )
 
+# ---- FeBundle library ----
 if(FEBUNDLE_COMPILED)
   if(FEBUNDLE_BUILD_SHARED)
     add_library(fe_bundle SHARED ${FEBUNDLE_HEADERS} ${FEBUNDLE_SOURCES})
@@ -90,11 +95,8 @@ if(FEBUNDLE_COMPILED)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
-  # optional but handy if this static lib might be linked into a shared lib later
   set_target_properties(fe_bundle PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
 else()
-  # Header-only
   add_library(fe_bundle INTERFACE)
   target_compile_features(fe_bundle INTERFACE cxx_std_23)
   target_include_directories(fe_bundle
@@ -104,10 +106,24 @@ else()
   )
 endif()
 
+# ---- Debug macro ----
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(fe_bundle PUBLIC FE_DEBUG)
 endif()
 
+# ---- stduuid (header-only) ----
+set(STDUUID_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/stduuid)
+target_include_directories(fe_bundle PUBLIC
+  $<BUILD_INTERFACE:${STDUUID_DIR}>
+  $<INSTALL_INTERFACE:include/FeBundle/3rdparty/stduuid>
+)
+
+install(DIRECTORY ${STDUUID_DIR}/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FeBundle/3rdparty/stduuid
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+)
+
+# ---- ImGui integration ----
 if(FEBUNDLE_WITH_IMGUI)
   set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/imgui)
 
@@ -121,7 +137,6 @@ if(FEBUNDLE_WITH_IMGUI)
     list(APPEND IMGUI_SOURCES ${IMGUI_DIR}/imgui_demo.cpp)
   endif()
 
-  # --- Backends: use SDL3 + SDLRenderer3 (this matches your code) ---
   set(IMGUI_BACKENDS
     ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
     ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
@@ -136,22 +151,18 @@ if(FEBUNDLE_WITH_IMGUI)
     $<INSTALL_INTERFACE:include/FeBundle/3rdparty/imgui/backends>
   )
 
-  # SDL3 is required for these backends
   find_package(SDL3 CONFIG REQUIRED)
   find_package(SDL3_image CONFIG REQUIRED)
   target_link_libraries(imgui PUBLIC SDL3::SDL3)
 
-
-  # Link ImGui to FeBundle PUBLIC so consumers get it on their link line
-  if(TARGET fe_bundle)
-    target_link_libraries(fe_bundle PUBLIC imgui)
-  endif()
+  target_link_libraries(fe_bundle PUBLIC imgui)
 
   install(TARGETS imgui EXPORT FeBundleTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
+
   install(DIRECTORY ${IMGUI_DIR}/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FeBundle/3rdparty/imgui
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
@@ -194,7 +205,7 @@ install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/FeBundleConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FeBundle
 )
- 
+
 target_link_libraries(fe_bundle PUBLIC SDL3::SDL3 SDL3_image::SDL3_image)
 
 add_subdirectory(testbed)

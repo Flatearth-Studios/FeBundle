@@ -2,13 +2,14 @@
 #define INCLUDE_FEBUNDLE_CORE_APPLICATION_HPP_
 
 #include "Clock.hpp"
+#include "FeBundle/Core/Events/EventBus.hpp"
 #include "FeBundle/Core/GameBridge.hpp"
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Systems/AudioSystem.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
-#include "FeBundle/Core/Events/EventBus.hpp"
+#include "FeBundle/Core/Systems/UIManager.hpp"
 #include "GameTypes.hpp"
 #include "Memory/Memory.hpp"
 #include "Renderer/Renderer.hpp"
@@ -20,6 +21,9 @@ using RendererPtr = std::unique_ptr<renderer::FeRenderer,
 
 using ImGuiPtr = std::unique_ptr<renderer::ImGuiLayer,
                                  memory::Deleter<renderer::ImGuiLayer>>;
+
+using GameBridgePtr =
+    std::unique_ptr<GameBridge, memory::PolyDeleter<GameBridge>>;
 
 struct ApplicationState {
   Game *gameInstance;
@@ -44,16 +48,17 @@ private:
   void dispatchEvents();
 
 private:
-  static ApplicationState _appState;
+  static ApplicationState _sAppState;
   core::events::EventBus _eventBus;
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;
   systems::InputManager _inputManager;
   systems::AssetManager _assetManager;
+  systems::UIManager _uiManager;
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
   systems::AudioSystem _audioSystem;
-  std::unique_ptr<GameBridge, memory::PolyDeleter<GameBridge>> _pBridge;
+  GameBridgePtr _pBridge;
 };
 
 } // namespace febundle

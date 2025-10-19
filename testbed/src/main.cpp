@@ -1,4 +1,6 @@
 #define FE_DEBUG
+#include "FeBundle/Core/Memory/Memory.hpp"
+#include "FeBundle/Core/UI/Button.hpp"
 #include "imgui.h"
 #include <FeBundle/Core/Application.hpp>
 #include <FeBundle/Core/Commands/AudioCommands.hpp>
@@ -55,66 +57,29 @@ static scene::Scene makeLevel1(Game &outGame) {
 }
 
 static scene::Scene makeUIScene(Game &outGame) {
-    scene::Scene uiScene(scene::SceneType::UI);
-    scene::Entity uiEntity = uiScene.Create();
-    scene::UI uiComp;
+  using namespace scene;
+  Scene uiScene(SceneType::UI);
 
-    uiComp.drawFn = [&]() {
-        // ESC toggles pause
-        if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-            outGame.isSuspended = !outGame.isSuspended;
+  // Create UI entity
+  Entity uiEntity = uiScene.Create(entity::Tag::UI);
 
-        if (!outGame.isSuspended)
-            return; // Don’t draw pause menu if running
+  // Create UI component
+  UI uiComp;
 
-        const ImGuiViewport* vp = ImGui::GetMainViewport();
-        ImVec2 center = vp->GetCenter();
+  // Create Play button widget
+  uiComp.pWidget =
+      memory::MakeShared<ui::Button>(memory::Tag::Scene, "Play", [&]() {
+        FLOG_INFO("Play button clicked!");
+      }).value();
 
-        ImGui::SetNextWindowBgAlpha(0.45f);
-        ImGui::SetNextWindowPos(ImVec2(center.x - 150, center.y - 100),
-                                ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(300, 200));
+  if (auto *button = dynamic_cast<ui::Button *>(uiComp.pWidget.get())) {
+    button->SetPosition(ImVec2(540.0f, 440.0f));
+    button->SetSize(ImVec2(200.0f, 60.0f));
+  }
 
-        ImGui::Begin("Pause Menu", nullptr,
-                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoSavedSettings);
-
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.95f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.22f, 0.35f, 0.8f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              ImVec4(0.30f, 0.36f, 0.56f, 0.9f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              ImVec4(0.45f, 0.50f, 0.70f, 1.0f));
-
-        ImGui::SetWindowFontScale(1.4f);
-        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - ImGui::CalcTextSize("PAUSED").x) * 0.5f);
-        ImGui::Text("PAUSED");
-        ImGui::SetWindowFontScale(1.0f);
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        if (ImGui::Button("Resume Game", ImVec2(250, 40))) {
-            outGame.isSuspended = false;
-            FLOG_INFO("Game resumed");
-        }
-
-        if (ImGui::Button("Restart Level", ImVec2(250, 40))) {
-            FLOG_INFO("Level restart requested");
-            // future: trigger scene reload event here
-        }
-
-        if (ImGui::Button("Exit Game", ImVec2(250, 40))) {
-            outGame.isRunning = false;
-            FLOG_INFO("Game exiting");
-        }
-
-        ImGui::PopStyleColor(4);
-        ImGui::End();
-    };
-
-    uiScene.AddComponent<scene::UI>(uiEntity, uiComp);
-    return uiScene;
+  // Attach UI component to entity
+  uiScene.AddComponent<UI>(uiEntity, uiComp);
+  return uiScene;
 }
 
 std::expected<void, Error> febundle::CreateGame(Game &outGame) {
@@ -122,22 +87,22 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   outGame.windowSpecs.width = 1280;
   outGame.windowSpecs.title = "Test Game";
 
-  // push both levels into game
-  outGame.scenes.push_back(makeLevel1(outGame));
-  outGame.scenes.push_back(makeUIScene(outGame));
-
   outGame.Initialize = [](Game &g) -> bool {
     // --- Collision response example ---
 
     g.collisionSystem.OnCollisionEnter(
         [&](const febundle::systems::CollisionEvent &evt) {
-          auto &scene = g.scenes[0];
+          auto *scene = g.SceneReference("world");
+          if (scene == nullptr) {
+            FLOG_ERROR("no scene under the alias 'world' was found");
+            return;
+          }
 
           // Rollback only entities that are kinematic (e.g. player)
           for (auto e : {evt.e1, evt.e2}) {
-            auto *transform = scene.GetComponent<scene::Transform>(e);
-            auto *kin = scene.GetComponent<scene::Kinematic>(e);
-            if (transform && kin) {
+            auto *transform = scene->GetComponent<scene::Transform>(e);
+            auto *kin = scene->GetComponent<scene::Kinematic>(e);
+            if (transform != nullptr && kin != nullptr) {
               transform->x = kin->lastSafePos.x;
               transform->y = kin->lastSafePos.y;
               FLOG_DEBUG("Entity {} rolled back due to collision", e);
@@ -149,17 +114,27 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
   };
 
   outGame.Update = [](Game &g, float32 deltaTime) -> bool {
-    auto &world = g.scenes[0];
-    auto &ui = g.scenes[1]; // our UI scene
+    auto *world = g.SceneReference("world");
+    if (world == nullptr) {
+      FLOG_ERROR("no scene under the alias 'world' was found");
+      return false;
+    }
+
+    auto *ui = g.SceneReference("ui"); // our UI scene
+    if (ui == nullptr) {
+      FLOG_ERROR("no scene under the alias 'ui' was found");
+      return false;
+    }
 
     if (!g.isSuspended) {
-      const auto entities = world.AccessAll();
+      const auto entities = world->AccessAll();
       for (const auto &[e, comp] : entities) {
-        auto *transform = world.GetComponent<scene::Transform>(e);
-        auto *input = world.GetComponent<scene::Input>(e);
-        auto *kin = world.GetComponent<scene::Kinematic>(e);
-        if (!input || !kin)
+        auto *transform = world->GetComponent<scene::Transform>(e);
+        auto *input = world->GetComponent<scene::Input>(e);
+        auto *kin = world->GetComponent<scene::Kinematic>(e);
+        if (!input || !kin) {
           continue;
+        }
 
         const float32 velocity = 70.0f;
         kin->lastSafePos = {transform->x, transform->y};
@@ -173,12 +148,12 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
         if (input->keyMap[core::input::Key::D])
           transform->x += velocity * deltaTime;
       }
-      g.collisionSystem.Update(world);
+
+      g.collisionSystem.Update(*world);
     }
 
-    g.collisionSystem.Update(world);
-    g.pBridge->RenderScene(world);
-    g.pBridge->RenderScene(ui);
+    g.pBridge->RenderScene(*world);
+    g.pBridge->RenderScene(*ui);
     return true;
   };
 
@@ -197,12 +172,31 @@ int main() {
     return -2;
   }
 
+  gameInstance.LoadScene("world", makeLevel1(gameInstance));
+  gameInstance.LoadScene("ui", makeUIScene(gameInstance));
+
   // Get the active scene (level 1 at start)
-  auto &scene = gameInstance.scenes[0];
+  auto *scene = gameInstance.SceneReference("world");
+  auto *uiScene = gameInstance.SceneReference("ui");
+
+  if (scene == nullptr || uiScene == nullptr) {
+    FLOG_ERROR("ui scene or world scene was not correctly set");
+    return -3;
+  }
+
+  auto uiEntities = uiScene->FindByTag(scene::entity::Tag::UI);
+
+  if (!uiEntities.empty()) {
+    FLOG_DEBUG("we have UI");
+    auto *ui = uiScene->GetComponent<scene::UI>(uiEntities[0]);
+    if (auto *button = dynamic_cast<ui::Button *>(ui->pWidget.get())) {
+      button->SetVisible(true);
+    }
+  }
 
   // Find an entity that has an Audio component
-  for (auto &[entity, _] : scene.AccessAll()) {
-    if (auto *audio = scene.GetComponent<scene::Audio>(entity)) {
+  for (auto &[entity, _] : scene->AccessAll()) {
+    if (auto *audio = scene->GetComponent<scene::Audio>(entity)) {
       // Build the play command directly from the component
       febundle::commands::PlaySoundCommand cmd{
           .assetHandle = audio->assetHandle,

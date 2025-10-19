@@ -5,10 +5,13 @@
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include "FeBundle/Core/Math/Math.hpp"
 #include "FeBundle/Core/Systems/AssetManager.hpp"
+#include "FeBundle/Core/UI/Widget.hpp"
 
 namespace febundle::scene {
 
 using TextureHandle = uintptr_t;
+
+using WidgetPtr = std::shared_ptr<ui::Widget>;
 
 enum class Component {
   Input,
@@ -34,62 +37,37 @@ struct IComponent {
 };
 
 struct Collider : public IComponent {
-  enum Component Component() const override {
-    return Component::Collider; 
-  }
+  enum Component Component() const override { return Component::Collider; }
 
-  virtual float32 Width() const {
-    return 0.0f;
-  };
-  virtual float32 Height() const {
-    return 0.0f;
-  }
-  virtual ShapeType Shape() const {
-    return ShapeType::Null; 
-  }
+  virtual float32 Width() const { return 0.0f; };
+  virtual float32 Height() const { return 0.0f; }
+  virtual ShapeType Shape() const { return ShapeType::Null; }
 };
 
 struct BoxCollider : public Collider {
-  enum Component Component() const override {
-    return type;
-  }
+  enum Component Component() const override { return type; }
 
-  float32 Width() const override {
-    return width;
-  }
+  float32 Width() const override { return width; }
 
-  float32 Height() const override {
-    return height;
-  }
+  float32 Height() const override { return height; }
 
-  ShapeType Shape() const override {
-    return ShapeType::Box;
-  }
+  ShapeType Shape() const override { return ShapeType::Box; }
 
   BoxCollider() : width(0), height(0) {}
-  BoxCollider(float32 width, float32 height)
-    : width(width), height(height) {}
-  
-  static constexpr enum Component type = Component::BoxCollider; 
+  BoxCollider(float32 width, float32 height) : width(width), height(height) {}
+
+  static constexpr enum Component type = Component::BoxCollider;
   float32 width, height;
 };
 
 struct CircleCollider : public Collider {
-  enum Component Component() const override {
-    return type;
-  }
+  enum Component Component() const override { return type; }
 
-  float32 Width() const override {
-    return radius * 2.0f;
-  }
+  float32 Width() const override { return radius * 2.0f; }
 
-  float32 Height() const override {
-    return radius * 2.0f;
-  }
+  float32 Height() const override { return radius * 2.0f; }
 
-  ShapeType Shape() const override {
-    return ShapeType::Circle;
-  }
+  ShapeType Shape() const override { return ShapeType::Circle; }
 
   CircleCollider() : radius(0) {}
   CircleCollider(float32 radius) : radius(radius) {}
@@ -99,41 +77,31 @@ struct CircleCollider : public Collider {
 };
 
 struct Input : public IComponent {
-  enum Component Component() const override {
-    return type;
-  }
+  enum Component Component() const override { return type; }
 
   static constexpr enum Component type = Component::Input;
   umap<core::input::Key, bool> keyMap;
 };
 
 struct Kinematic : public IComponent {
-  enum Component Component() const override {
-    return type;
-  }
-  
+  enum Component Component() const override { return type; }
+
   static constexpr enum Component type = Component::Input;
   core::math::Vec2 lastSafePos{};
 };
 
 struct Transform : public IComponent {
-  enum Component Component() const override {
-    return type;
-  } 
-  
+  enum Component Component() const override { return type; }
 
   static constexpr enum Component type = Component::Transform;
   float32 x{0}, y{0}, rot{0}, sx{1}, sy{1};
 
   Transform() {}
-  Transform(float32 x, float32 y) 
-    : x(x), y(y) {}
+  Transform(float32 x, float32 y) : x(x), y(y) {}
 };
 
 struct Sprite : public IComponent {
-  enum Component Component() const override {
-    return type;
-  }
+  enum Component Component() const override { return type; }
 
   static constexpr enum Component type = Component::Sprite;
   uint64 id{0};
@@ -143,13 +111,11 @@ struct Sprite : public IComponent {
 
   Sprite() {}
   Sprite(uint64 id, float32 width, float32 height)
-    : id(id), width(width), height(height) {}
+      : id(id), width(width), height(height) {}
 };
 
 struct Audio : public IComponent {
-  enum Component Component() const override {
-    return type;
-  }
+  enum Component Component() const override { return type; }
 
   static constexpr enum Component type = Component::Audio;
   assets::AssetHandle assetHandle;
@@ -158,12 +124,12 @@ struct Audio : public IComponent {
 };
 
 struct UI : public IComponent {
-    enum Component Component() const override { return Component::UI; }
+  enum Component Component() const override { return Component::UI; }
 
-    std::function<void()> drawFn;
-    int zIndex{0};
+  WidgetPtr pWidget;
+  int zIndex{0};
 };
 
-}
+} // namespace febundle::scene
 
 #endif // INCLUDE_FEBUNDLE_CORE_SCENE_COMPONENTS_HPP_

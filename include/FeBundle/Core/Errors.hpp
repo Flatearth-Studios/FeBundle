@@ -17,6 +17,7 @@ enum class ErrorName {
   InitializeGameCallback,
   InitializeAudioSubsystem,
   CreateAudioDevice,
+  LoadSceneEvent,
   LoadImage,
   LoadAudio,
   BadAsset,

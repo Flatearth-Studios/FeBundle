@@ -32,6 +32,7 @@ struct WorldRenderEvent : RenderEvent {
 struct UIRenderEvent : RenderEvent {
   std::function<void()> drawFn;
 
+  UIRenderEvent() : drawFn(nullptr) {}
   UIRenderEvent(std::function<void()> fn) : drawFn(fn) {}
 };
 

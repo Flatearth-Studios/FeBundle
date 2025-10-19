@@ -6,6 +6,7 @@
 #include "FeBundle/Core/Scene/Entity.hpp"
 #include "FeBundle/Core/Scene/Store.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
+#include "stduuid.h"
 #include <typeindex>
 
 namespace febundle::scene {
@@ -20,15 +21,19 @@ public:
   Scene(SceneType type = SceneType::World);
   ~Scene() = default;
 
-  Scene(const Scene&) = delete;
-  Scene& operator=(const Scene&) = delete;
+  Scene(const Scene &) = delete;
+  Scene &operator=(const Scene &) = delete;
 
-  Scene(Scene&&) noexcept = default;
-  Scene& operator=(Scene&&) noexcept = default;
+  Scene(Scene &&) noexcept = default;
+  Scene &operator=(Scene &&) noexcept = default;
 
-  Entity Create();
+  Entity Create(entity::Tag tag = entity::Tag::Character,
+                const string &name = "entity");
   void Destroy(Entity e);
   SceneType Type() const;
+  string SceneId() const;
+  std::vector<Entity> FindByTag(entity::Tag tag) const;
+  std::vector<Entity> FindByName(const string &name) const;
 
   const umap<Entity, uset<Component>> &AccessAll() const;
   void ProcessInputEvent(const systems::InputEvent *ie);
@@ -45,7 +50,8 @@ public:
     return getStore<C>().Get(e);
   }
 
-  template <typename C> void AddComponent(Entity e, C component) {
+  template <typename C>
+  void AddComponent(Entity e, C component) {
     static_assert(std::is_base_of_v<IComponent, C>,
                   "typename C must derive from IComponent");
     const Component cid =
@@ -90,8 +96,8 @@ private:
   template <typename C> const Store<C> &getStore() const {
     const auto id = std::type_index(typeid(C));
     auto *base = _stores.at(id).get();
-    auto *wrap = static_cast<const StoreWrapper<C> *>(base); 
-    return wrap->store;                                      
+    auto *wrap = static_cast<const StoreWrapper<C> *>(base);
+    return wrap->store;
   }
 
   struct IStoreWrapper {
@@ -106,8 +112,11 @@ private:
        std::unique_ptr<IStoreWrapper, memory::PolyDeleter<IStoreWrapper>>>
       _stores;
   umap<Entity, uset<Component>> _entityComponents;
+  umap<Entity, EntityMetadata> _entityMetadata;
   Entity _next{0};
   enum SceneType _type;
+
+  uuids::uuid _id;
 };
 
 } // namespace febundle::scene

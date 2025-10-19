@@ -12,21 +12,22 @@
 
 namespace febundle {
 
-ApplicationState App::_appState{};
+ApplicationState App::_sAppState{};
 
 App::App(Game *gameInstance, bool logToFile, bool logToStdout)
     : _feWindow(gameInstance->windowSpecs), _assetManager(_eventBus),
+      _uiManager(_eventBus),
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
                                memory::Tag::Renderer, _feWindow, _eventBus))
                      .value()),
       _audioSystem(_eventBus),
       _pBridge(std::move(memory::MakeUniquePoly<GameBridge, GameBridgeImpl>(
-                             memory::Tag::Application, _eventBus))
+                             memory::Tag::Application, _eventBus, _uiManager))
                    .value()) {
 
   ENABLE_FILE_LOGGING(logToFile);
-  _appState.gameInstance = gameInstance;
-  _appState.gameInstance->pBridge = _pBridge.get();
+  _sAppState.gameInstance = gameInstance;
+  _sAppState.gameInstance->pBridge = _pBridge.get();
 }
 
 App::~App() {
@@ -48,12 +49,12 @@ std::expected<void, Error> App::Init() {
     return std::unexpected{res.error()};
   }
 
-  if (!_appState.gameInstance->Initialize(*_appState.gameInstance)) {
+  if (!_sAppState.gameInstance->Initialize(*_sAppState.gameInstance)) {
     FLOG_ERROR("could not initialize game instance");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
-  _appState.gameInstance->isRunning = true;
-  _appState.gameInstance->isSuspended = false;
+  _sAppState.gameInstance->isRunning = true;
+  _sAppState.gameInstance->isSuspended = false;
 
   if (auto res = _pRenderer->Init(); !res.has_value()) {
     FLOG_ERROR("failed to initialize renderer");
@@ -75,9 +76,9 @@ std::expected<void, Error> App::Init() {
   }
 
   // --- Assets ---
-  _assetManager.SetLoader(&_appState.gameInstance->assetLoader);
-  _appState.width = _appState.gameInstance->windowSpecs.width;
-  _appState.height = _appState.gameInstance->windowSpecs.height;
+  _assetManager.SetLoader(&_sAppState.gameInstance->assetLoader);
+  _sAppState.width = _sAppState.gameInstance->windowSpecs.width;
+  _sAppState.height = _sAppState.gameInstance->windowSpecs.height;
 
   // First load pass (registers all handles)
   _assetManager.Sync();
@@ -88,7 +89,7 @@ std::expected<void, Error> App::Init() {
   FLOG_INFO("FileWatcher is now monitoring assets/");
 
   // Start clock and finalize init
-  _appState.clock.Start();
+  _sAppState.clock.Start();
 
   FLOG_INFO("application initialized successfully");
   return {};
@@ -97,8 +98,8 @@ std::expected<void, Error> App::Init() {
 std::expected<void, Error> App::Run() {
   FLOG_TRACE("starting application");
 
-  _appState.clock.Update();
-  _appState.lastTime = _appState.clock.NowTime();
+  _sAppState.clock.Update();
+  _sAppState.lastTime = _sAppState.clock.NowTime();
 
   while (!_feWindow.ShouldClose()) {
     SDL_Event event;
@@ -107,22 +108,22 @@ std::expected<void, Error> App::Run() {
       _feWindow.ProcessEvent(event);
       _pImguiLayer->ProcessEvent(event);
       inputEvent = _inputManager.ProcessEvent(event);
-      for (auto &scene : _appState.gameInstance->scenes) {
+      for (auto &[_, scene] : _sAppState.gameInstance->scenes) {
         // TODO: rethink this loop
         scene.ProcessInputEvent(inputEvent);
       }
     }
 
-    if (!_appState.gameInstance->isRunning) {
+    if (!_sAppState.gameInstance->isRunning) {
       break;
     }
 
-    auto now = _appState.clock.NowTime();
-    float64 deltaTime = now - _appState.lastTime;
-    _appState.lastTime = now;
+    auto now = _sAppState.clock.NowTime();
+    float64 deltaTime = now - _sAppState.lastTime;
+    _sAppState.lastTime = now;
 
     _inputManager.Update();
-    if (!_appState.gameInstance->Update(*_appState.gameInstance, deltaTime)) {
+    if (!_sAppState.gameInstance->Update(*_sAppState.gameInstance, deltaTime)) {
       FLOG_ERROR("game failed to update");
       break;
     }
@@ -153,18 +154,18 @@ std::expected<void, Error> App::Run() {
 std::expected<void, Error> App::checkAndResizeWindow() {
   const auto newSpecs = _feWindow.Specs();
   bool resized = false;
-  if (newSpecs.height != _appState.height ||
-      newSpecs.width != _appState.width) {
-    _appState.height = newSpecs.height;
-    _appState.width = newSpecs.width;
-    _appState.gameInstance->windowSpecs = newSpecs;
-    _pRenderer->Resize(_appState.width, _appState.height);
+  if (newSpecs.height != _sAppState.height ||
+      newSpecs.width != _sAppState.width) {
+    _sAppState.height = newSpecs.height;
+    _sAppState.width = newSpecs.width;
+    _sAppState.gameInstance->windowSpecs = newSpecs;
+    _pRenderer->Resize(_sAppState.width, _sAppState.height);
     resized = true;
   }
 
   if (resized &&
-      !_appState.gameInstance->OnResize(*_appState.gameInstance,
-                                        _appState.width, _appState.height)) {
+      !_sAppState.gameInstance->OnResize(*_sAppState.gameInstance,
+                                        _sAppState.width, _sAppState.height)) {
     FLOG_ERROR("game failed to resize");
     return std::unexpected{Error(ErrorName::ResizeWindow)};
   }
@@ -173,17 +174,17 @@ std::expected<void, Error> App::checkAndResizeWindow() {
 }
 
 std::expected<void, Error> App::canRunGameInstance() {
-  if (!_appState.gameInstance->Initialize) {
+  if (!_sAppState.gameInstance->Initialize) {
     FLOG_ERROR("game function callback undefined: Initialize");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
 
-  if (!_appState.gameInstance->Update) {
+  if (!_sAppState.gameInstance->Update) {
     FLOG_ERROR("game function callback undefined: Update");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
 
-  if (!_appState.gameInstance->OnResize) {
+  if (!_sAppState.gameInstance->OnResize) {
     FLOG_ERROR("game function callback undefined: OnResize");
     return std::unexpected{Error(ErrorName::InitializeGameCallback)};
   }
