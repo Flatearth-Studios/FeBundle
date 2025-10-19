@@ -17,7 +17,8 @@ struct Game {
   bool isRunning{false}, isSuspended{true};
 
   void *pState = nullptr;
-  std::vector<scene::Scene> scenes;
+  umap<string, string> mapOfSceneIds;
+  umap<string, scene::Scene> scenes;
   systems::CollisionSystem collisionSystem;
   systems::AssetLoader assetLoader;
   GameBridge *pBridge;
@@ -26,10 +27,11 @@ struct Game {
   std::function<bool(struct Game &, float32)> Update;
   std::function<bool(struct Game &, uint32 width, uint32 height)> OnResize;
 
-  Game()
-      : Initialize(nullptr), Update(nullptr), OnResize(nullptr) {
-    scenes.reserve(MaxScenes);
-  }
+  Game();
+
+  void LoadScene(const string &alias, scene::Scene scene);
+  const scene::Scene *SceneReference(const string &alias) const;
+  scene::Scene *SceneReference(const string &alias);
 };
 
 } // namespace febundle

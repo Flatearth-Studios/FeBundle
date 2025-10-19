@@ -76,6 +76,7 @@ set(FEBUNDLE_SOURCES
     src/Core/Systems/UIManager.cc
     src/Core/Systems/CollisionSystem.cc
     src/Core/Clock.cc
+    src/Core/Game.cc
 	src/Core/GameBridge.cc
     src/Core/Application.cc
 )

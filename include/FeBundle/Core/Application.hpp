@@ -48,7 +48,7 @@ private:
   void dispatchEvents();
 
 private:
-  static ApplicationState _appState;
+  static ApplicationState _sAppState;
   core::events::EventBus _eventBus;
   RendererPtr _pRenderer;
   ImGuiPtr _pImguiLayer;

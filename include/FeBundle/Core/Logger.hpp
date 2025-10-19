@@ -87,7 +87,7 @@ public:
     }
 
     const bool logToFile = true;
-    const string out = format(level, where, fmt, logToFile, args...);
+    const string out = format(level, where, fmt, args...);
     LogMessage msg{
         .level = level,
         .where = where,
@@ -107,7 +107,7 @@ public:
     }
 
     const bool logToFile = false;
-    const string out = format(level, where, fmt, logToFile, args...);
+    const string out = format(level, where, fmt, args...);
     LogMessage msg{
         .level = level,
         .where = where,
@@ -170,8 +170,7 @@ private:
 
   template <typename... Args>
   inline string format(LogLevel level, std::source_location where,
-                       std::string_view fmt, bool logToFile,
-                       const Args &...args) noexcept {
+                       std::string_view fmt, const Args &...args) noexcept {
     std::lock_guard<std::mutex> guard(_mutex);
     auto payload = std::vformat(fmt, std::make_format_args(args...));
     const char *color = LevelColour(level);
@@ -179,22 +178,10 @@ private:
     const char *lvlStr = toString(level);
     const char *full = where.file_name();
     const char *p = std::strstr(full, "src/");
-    if (!p) {
+    if (p == nullptr) {
       auto slash = std::strrchr(full, '/');
       p = slash ? slash + 1 : full;
     }
-
-    /*
-    if (logToFile) {
-      const auto now = std::chrono::system_clock::now();
-      std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
-      string nowTimeStr = std::ctime(&nowTime);
-      std::erase(nowTimeStr, '\n');
-      return std::format("[{}] - [{}] {}:{} in function '{}': {}\n", nowTimeStr,
-                         lvlStr, p, where.line(), where.function_name(),
-                         payload);
-    }
-    */
 
     return std::format("{}[{}] {}:{} in function {}'{}'{}: {}{}\n", color,
                        lvlStr, p, where.line(), reset, where.function_name(),
@@ -262,7 +249,7 @@ private:
   std::mutex _qMutex;
   std::condition_variable _cv;
   std::thread _workerThread;
-  atomic_bool _running = true;
+  atomic_bool _running{true};
 };
 
 } // namespace febundle::core

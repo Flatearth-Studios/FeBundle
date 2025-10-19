@@ -1,3 +1,4 @@
+#include "FeBundle/Core/Scene/Entity.hpp"
 #include "stduuid.h"
 #include <random>
 #define FE_DEBUG
@@ -5,6 +6,8 @@
 #include "FeBundle/Core/Scene/Components.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
+
+static constexpr int32 scMaxEntitiesAllowed = 50000;
 
 namespace febundle::scene {
 
@@ -23,13 +26,24 @@ Scene::Scene(enum SceneType type) : _type(type) {
   _id = gen();
 }
 
-Entity Scene::Create() { return _next++; }
+Entity Scene::Create(entity::Tag tag, const string &name) {
+  Entity e = _next++;
+  _entityMetadata.emplace(e, EntityMetadata{
+      .name = name,
+      .tag = tag,
+    });
+
+  return e; 
+}
 
 void Scene::Destroy(Entity e) {
   RemoveComponent<Transform>(e);
   RemoveComponent<Sprite>(e);
   RemoveComponent<Input>(e);
   RemoveComponent<Audio>(e);
+  if (_entityMetadata.contains(e)) {
+    std::size_t _ = _entityMetadata.erase(e);
+  }
 }
 
 enum SceneType Scene::Type() const {
@@ -42,6 +56,32 @@ string Scene::SceneId() const {
 
 const umap<Entity, uset<Component>> &Scene::AccessAll() const {
   return _entityComponents;
+}
+
+std::vector<Entity> Scene::FindByTag(entity::Tag tag) const {
+  std::vector<Entity> out;
+  out.reserve(scMaxEntitiesAllowed);
+
+  for (const auto &[entity, entityMetadata] : _entityMetadata) {
+    if (entityMetadata.tag == tag) {
+      out.push_back(entity);
+    }
+  }
+
+  return out;
+}
+
+std::vector<Entity> Scene::FindByName(const string &name) const {
+  std::vector<Entity> out;
+  out.reserve(scMaxEntitiesAllowed);
+
+  for (const auto &[entity, entityMetadata] : _entityMetadata) {
+    if (entityMetadata.name == name) {
+      out.push_back(entity);
+    }
+  }
+
+  return out;
 }
 
 void Scene::ProcessInputEvent(const systems::InputEvent *ie) {
