@@ -81,8 +81,6 @@ void RenderSystem::renderWorld(const scene::Scene &scene) {
     if (auto res = _eventBus.Push(evt); !res.has_value()) {
       FLOG_ERROR("failed to register WorldRenderEvent");
     }
-
-    FLOG_DEBUG("WorldRenderEvent pushed...");
   }
 }
 
