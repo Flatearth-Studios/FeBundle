@@ -123,12 +123,6 @@ bool FeRenderer::renderSprite(const scene::Transform &transform,
       .h = height,
   };
 
-
-  FLOG_DEBUG("world {},{} view[2]={},{} projection={},{}",
-             transform.x, transform.y,
-             _view[2][0], _view[2][1],
-             _projection[0][0], _projection[1][1]);
-
   const float64 angleDegree = transform.rot * 180.0 / FE_PI;
   SDL_FPoint center{origin.x * width, origin.y * height};
 
