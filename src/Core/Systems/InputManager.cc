@@ -1,4 +1,5 @@
 #define FE_DEBUG
+#include "FeBundle/Core/Logger.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include <SDL3/SDL_keycode.h>
@@ -19,11 +20,12 @@ InputManager::InputManager() {
                                   .keyState = core::input::KeyState::Idle,
                               });
   }
+
+  FLOG_INFO("input manager successfully initialized");
 }
 
 void InputManager::Update() {
   using core::input::KeyState;
-
   for (auto &[key, evt] : _keyEvents) {
     switch (evt.keyState) {
     case KeyState::Pressed:

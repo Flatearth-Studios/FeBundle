@@ -8,11 +8,11 @@ Game::Game() : Initialize(nullptr), Update(nullptr), OnResize(nullptr) {
   scenes.reserve(MaxScenes);
 }
 
-void Game::LoadScene(const string &alias, scene::Scene scene) {
+void Game::LoadScene(const string &alias, scene::Scene scene, float32 width, float32 height) {
   const string id = scene.SceneId();
 
-  if (scene.Type() == scene::SceneType::UI && pBridge) {
-    pBridge->LoadUIScene(scene);
+  if (pBridge != nullptr) {
+    pBridge->LoadScene(scene, width, height);
   }
 
   if (scenes.contains(id)) {

@@ -30,9 +30,11 @@ void GameBridgeImpl::RenderScene(const scene::Scene &scene) {
   _renderSystem.RenderScene(scene);
 }
 
-void GameBridgeImpl::LoadUIScene(const scene::Scene &scene) {
+void GameBridgeImpl::LoadScene(scene::Scene &scene, float32 width, float32 height) {
   core::events::SceneLoadedEvent evt{
-      .cpScene = &scene,
+      .pScene = &scene,
+      .oViewportWidth = width,
+      .oViewportHeight = height,
   };
 
   if (auto res = _eventBus.Push(evt); !res.has_value()) {

@@ -1,10 +1,10 @@
 #ifndef INCLUDE_FEBUNDLE_CORE_GAME_TYPES_HPP_
 #define INCLUDE_FEBUNDLE_CORE_GAME_TYPES_HPP_
 
+#include "FeBundle/Core/GameBridge.hpp"
 #include "FeBundle/Core/Scene/Scene.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Window/Window.hpp"
-#include "FeBundle/Core/GameBridge.hpp"
 #include <functional>
 
 namespace febundle {
@@ -29,7 +29,8 @@ struct Game {
 
   Game();
 
-  void LoadScene(const string &alias, scene::Scene scene);
+  void LoadScene(const string &alias, scene::Scene scene,
+                 float32 width = 1280.0f, float32 height = 960.0f);
   const scene::Scene *SceneReference(const string &alias) const;
   scene::Scene *SceneReference(const string &alias);
 };

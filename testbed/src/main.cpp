@@ -18,6 +18,22 @@ using namespace febundle;
 
 static scene::Scene makeLevel1(Game &outGame) {
   scene::Scene scene;
+
+  scene::Entity camEntity = scene.Create();
+  scene::Transform camTransform(0.0f, 0.0f);
+
+  // Create the underlying camera object
+  scene::Camera camComp;
+  camComp.pCamera = memory::MakeShared<camera::Camera>(
+                        memory::Tag::Scene,
+                        camera::Camera::Default(outGame.windowSpecs.width,
+                                                outGame.windowSpecs.height))
+                        .value();
+  camComp.pCamera->active = true;
+
+  scene.AddComponent<scene::Transform>(camEntity, camTransform);
+  scene.AddComponent<scene::Camera>(camEntity, camComp);
+
   scene::Entity e = scene.Create();  // player
   scene::Entity e2 = scene.Create(); // obstacle
 
@@ -136,18 +152,24 @@ std::expected<void, Error> febundle::CreateGame(Game &outGame) {
           continue;
         }
 
+
         const float32 velocity = 70.0f;
         kin->lastSafePos = {transform->x, transform->y};
 
-        if (input->keyMap[core::input::Key::W])
+        if (input->keyMap[core::input::Key::W]) {
           transform->y -= velocity * deltaTime;
-        if (input->keyMap[core::input::Key::A])
+        }
+        if (input->keyMap[core::input::Key::A]) {
           transform->x -= velocity * deltaTime;
-        if (input->keyMap[core::input::Key::S])
+        }
+        if (input->keyMap[core::input::Key::S]) {
           transform->y += velocity * deltaTime;
-        if (input->keyMap[core::input::Key::D])
+        }
+        if (input->keyMap[core::input::Key::D]) {
           transform->x += velocity * deltaTime;
+        }
       }
+
 
       g.collisionSystem.Update(*world);
     }
@@ -172,8 +194,11 @@ int main() {
     return -2;
   }
 
-  gameInstance.LoadScene("world", makeLevel1(gameInstance));
-  gameInstance.LoadScene("ui", makeUIScene(gameInstance));
+  auto lv1 = makeLevel1(gameInstance);
+  auto uis = makeUIScene(gameInstance);
+
+  gameInstance.LoadScene("world", std::move(lv1));
+  gameInstance.LoadScene("ui", std::move(uis));
 
   // Get the active scene (level 1 at start)
   auto *scene = gameInstance.SceneReference("world");
