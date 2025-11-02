@@ -12,8 +12,6 @@ namespace febundle::systems {
 
 RenderSystem::RenderSystem(core::events::EventBus &evtBus, UIManager &uiManager)
     : _eventBus(evtBus), _uiManager(uiManager) {
-
-  LOG_INFO("RenderSystem bus: {}", fmt::ptr(&_eventBus));
   core::events::EventSubscription<core::events::SceneLoadedEvent> subscription{
       .subscriber = "RenderSystem",
       .callback = [&](const core::events::SceneLoadedEvent &evt)

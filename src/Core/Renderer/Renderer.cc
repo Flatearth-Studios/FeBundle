@@ -22,9 +22,7 @@ namespace febundle::renderer {
 bool FeRenderer::_sInitialized = false;
 
 FeRenderer::FeRenderer(window::Window &feWindow, core::events::EventBus &evtBus)
-    : _feWindow(feWindow), _eventBus(evtBus) {
-  LOG_INFO("Renderer bus: {}", fmt::ptr(&_eventBus));
-}
+    : _feWindow(feWindow), _eventBus(evtBus) {}
 
 FeRenderer::~FeRenderer() { cleanup(); }
 
