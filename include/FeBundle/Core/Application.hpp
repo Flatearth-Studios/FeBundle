@@ -7,6 +7,7 @@
 #include "FeBundle/Core/Renderer/ImGuiLayer.hpp"
 #include "FeBundle/Core/Systems/AssetManager.hpp"
 #include "FeBundle/Core/Systems/AudioSystem.hpp"
+#include "FeBundle/Core/Systems/CameraSystem.hpp"
 #include "FeBundle/Core/Systems/CollisionSystem.hpp"
 #include "FeBundle/Core/Systems/InputManager.hpp"
 #include "FeBundle/Core/Systems/UIManager.hpp"
@@ -57,6 +58,7 @@ private:
   systems::UIManager _uiManager;
   window::Window _feWindow;
   systems::CollisionSystem _collisionSys;
+  systems::CameraSystem _cameraSystem;
   systems::AudioSystem _audioSystem;
   GameBridgePtr _pBridge;
 };

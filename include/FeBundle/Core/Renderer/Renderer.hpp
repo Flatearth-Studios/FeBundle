@@ -4,6 +4,7 @@
 #include "../Window/Window.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Events/EventBus.hpp"
+#include "FeBundle/Core/Math/Math.hpp"
 #include "FeBundle/Core/Scene/Components.hpp"
 
 #include <SDL3/SDL_render.h>
@@ -21,6 +22,9 @@ public:
   void BeginFrame();
   void EndFrame();
 
+  void SetViewProjection(const core::math::Mat3 &view,
+                         const core::math::Mat3 &projection);
+
 private:
   std::expected<void, Error> initImGui();
   SDL_Texture *loadTexture(assets::AssetHandle ah);
@@ -31,6 +35,8 @@ private:
   void cleanup();
 
 private:
+  core::math::Mat3 _view{core::math::Mat3::Identity()};
+  core::math::Mat3 _projection{core::math::Mat3::Identity()};
   SDL_Renderer *_pRenderer;
   window::Window &_feWindow;
   static bool _sInitialized;

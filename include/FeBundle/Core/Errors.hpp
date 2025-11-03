@@ -6,6 +6,7 @@ namespace febundle {
 enum class ErrorName {
   Null,
   BadAllocation,
+  NoActiveCamera,
   UnknownAsset,
   AllocationException,
   CreateWindow,
@@ -17,6 +18,7 @@ enum class ErrorName {
   InitializeGameCallback,
   InitializeAudioSubsystem,
   CreateAudioDevice,
+  CameraSwapEvent,
   LoadSceneEvent,
   LoadImage,
   LoadAudio,

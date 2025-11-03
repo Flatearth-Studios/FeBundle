@@ -23,7 +23,6 @@ void CollisionSystem::Update(scene::Scene &scene) {
     auto *transform = scene.GetComponent<scene::Transform>(e);
     auto *box = scene.GetComponent<scene::BoxCollider>(e);
     if (transform == nullptr || box == nullptr) {
-      FLOG_TRACE("No box collider or transform for entity {}", e);
       continue;
     }
 

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FEBUNDLE_CORE_SCENE_COMPONENTS_HPP_
 #define INCLUDE_FEBUNDLE_CORE_SCENE_COMPONENTS_HPP_
 
+#include "FeBundle/Core/Camera/Camera.hpp"
 #include "FeBundle/Core/Defines.hpp"
 #include "FeBundle/Core/Input/Inputs.hpp"
 #include "FeBundle/Core/Math/Math.hpp"
@@ -12,6 +13,7 @@ namespace febundle::scene {
 using TextureHandle = uintptr_t;
 
 using WidgetPtr = std::shared_ptr<ui::Widget>;
+using CameraPtr = std::shared_ptr<camera::Camera>;
 
 enum class Component {
   Input,
@@ -23,6 +25,7 @@ enum class Component {
   Texture,
   Sprite,
   UI,
+  Camera,
 };
 
 enum class ShapeType {
@@ -95,6 +98,7 @@ struct Transform : public IComponent {
 
   static constexpr enum Component type = Component::Transform;
   float32 x{0}, y{0}, rot{0}, sx{1}, sy{1};
+  bool dirty{false};
 
   Transform() {}
   Transform(float32 x, float32 y) : x(x), y(y) {}
@@ -124,10 +128,20 @@ struct Audio : public IComponent {
 };
 
 struct UI : public IComponent {
-  enum Component Component() const override { return Component::UI; }
+  enum Component Component() const override { return type; }
+
+  static constexpr enum Component type = Component::UI;
 
   WidgetPtr pWidget;
   int zIndex{0};
+};
+
+struct Camera : public IComponent {
+  enum Component Component() const override { return type; }
+
+  static constexpr enum Component type = Component::Camera;
+
+  CameraPtr pCamera;
 };
 
 } // namespace febundle::scene

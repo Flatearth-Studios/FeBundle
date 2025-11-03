@@ -1,5 +1,5 @@
-#include "FeBundle/Core/Events/RenderEvents.hpp"
 #define FE_DEBUG
+#include "FeBundle/Core/Events/RenderEvents.hpp"
 #include "FeBundle/Core/Assets/Common.hpp"
 #include "FeBundle/Core/Assets/Texture.hpp"
 #include "FeBundle/Core/Events/AssetLoadEvent.hpp"
@@ -27,6 +27,7 @@ FeRenderer::FeRenderer(window::Window &feWindow, core::events::EventBus &evtBus)
 FeRenderer::~FeRenderer() { cleanup(); }
 
 std::expected<void, Error> FeRenderer::Init() {
+
   if (_sInitialized) {
     FLOG_WARN("attempt to initialize renderer twice");
     return {};
@@ -64,7 +65,7 @@ std::expected<void, Error> FeRenderer::Render() {
     FLOG_ERROR("failed to dispatch render calls");
     return std::unexpected{res.error()};
   }
-
+  
   return {};
 }
 
@@ -79,6 +80,12 @@ void FeRenderer::Resize(uint32 width, uint32 height) {
 void FeRenderer::BeginFrame() { SDL_RenderClear(_pRenderer); }
 
 void FeRenderer::EndFrame() { SDL_RenderPresent(_pRenderer); }
+
+void FeRenderer::SetViewProjection(const core::math::Mat3 &view,
+                                   const core::math::Mat3 &projection) {
+  _view = view;
+  _projection = projection;
+}
 
 SDL_Texture *FeRenderer::loadTexture(assets::AssetHandle ah) {
   if (_mapOfpTextures.contains(ah)) {
@@ -101,20 +108,21 @@ bool FeRenderer::renderSprite(const scene::Transform &transform,
 
   const float32 width = sprite.width * transform.sx;
   const float32 height = sprite.height * transform.sy;
-  const SDL_FPoint origin = {0.5f, 0.5f};
 
+  core::math::Vec2 worldPos{transform.x, transform.y};
+  core::math::Vec2 cameraSpace = _view * worldPos;
+  core::math::Vec2 projected = _projection * cameraSpace;
+
+  const SDL_FPoint origin = {0.5f, 0.5f};
   SDL_FRect destination{
-      .x = transform.x - origin.x * width,
-      .y = transform.y - origin.y * height,
+      .x = projected.x - origin.x * width,
+      .y = projected.y - origin.y * height,
       .w = width,
       .h = height,
   };
 
   const float64 angleDegree = transform.rot * 180.0 / FE_PI;
-  SDL_FPoint center{
-      .x = origin.x * width,
-      .y = origin.y * height,
-  };
+  SDL_FPoint center{origin.x * width, origin.y * height};
 
   return SDL_RenderTextureRotated(_pRenderer, texture, nullptr, &destination,
                                   angleDegree, &center, SDL_FLIP_NONE);

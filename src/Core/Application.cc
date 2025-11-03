@@ -1,4 +1,5 @@
 #include "FeBundle/Core/Events/GameCommandEvent.hpp"
+#include "FeBundle/Core/Scene/Components.hpp"
 #define FE_DEBUG
 #include "FeBundle/Core/Application.hpp"
 #include "FeBundle/Core/Events/AssetLoadEvent.hpp"
@@ -20,6 +21,7 @@ App::App(Game *gameInstance, bool logToFile, bool logToStdout)
       _pRenderer(std::move(MakeUnique<renderer::FeRenderer>(
                                memory::Tag::Renderer, _feWindow, _eventBus))
                      .value()),
+      _cameraSystem(_eventBus),
       _audioSystem(_eventBus),
       _pBridge(std::move(memory::MakeUniquePoly<GameBridge, GameBridgeImpl>(
                              memory::Tag::Application, _eventBus, _uiManager))
@@ -102,6 +104,7 @@ std::expected<void, Error> App::Run() {
   _sAppState.lastTime = _sAppState.clock.NowTime();
 
   while (!_feWindow.ShouldClose()) {
+    _sAppState.clock.Update();
     SDL_Event event;
     systems::InputEvent *inputEvent;
     while (SDL_PollEvent(&event)) {
@@ -135,6 +138,14 @@ std::expected<void, Error> App::Run() {
 
     _assetManager.Sync();
     dispatchEvents();
+
+    _cameraSystem.Update(deltaTime);
+    scene::CameraPtr cam = _cameraSystem.ActiveCamera();
+    if (cam == nullptr) {
+      FLOG_WARN("No active camera in scene!");
+    } else {
+      _pRenderer->SetViewProjection(cam->view, cam->projection);
+    }
 
     _pRenderer->BeginFrame();
     _pImguiLayer->BeginFrame();

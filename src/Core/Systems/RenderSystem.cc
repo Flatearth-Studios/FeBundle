@@ -12,17 +12,23 @@ namespace febundle::systems {
 
 RenderSystem::RenderSystem(core::events::EventBus &evtBus, UIManager &uiManager)
     : _eventBus(evtBus), _uiManager(uiManager) {
-
   core::events::EventSubscription<core::events::SceneLoadedEvent> subscription{
       .subscriber = "RenderSystem",
       .callback = [&](const core::events::SceneLoadedEvent &evt)
           -> std::expected<void, Error> {
-        if (evt.cpScene == nullptr) {
+        if (evt.pScene == nullptr) {
           FLOG_ERROR("attempt to load nullptr scene");
           return std::unexpected{Error(ErrorName::LoadSceneEvent)};
         }
 
-        registerUIElements(*evt.cpScene);
+        switch (evt.pScene->Type()) {
+        case scene::SceneType::UI:
+          registerUIElements(*evt.pScene);
+          break; 
+        case scene::SceneType::World:
+          break;
+        }
+
         return {};
       },
   };
