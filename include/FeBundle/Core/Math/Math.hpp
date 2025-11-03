@@ -60,7 +60,7 @@ struct Mat3 {
 
   static Mat3 Identity() { return Mat3(); }
 
-  static constexpr Mat3 Translation(const Vec2 &v) noexcept {
+  inline  Mat3 Translation(const Vec2 &v) noexcept {
     Mat3Array arr = IDENTITY_MAT3;
     arr[0][2] = v.x;
     arr[1][2] = v.y;
@@ -79,14 +79,14 @@ struct Mat3 {
     return Mat3(arr);
   }
 
-  static constexpr Mat3 Scale(const Vec2 &v) noexcept {
+  inline constexpr Mat3 Scale(const Vec2 &v) noexcept {
     Mat3Array arr = IDENTITY_MAT3;
     arr[0][0] = v.x;
     arr[1][1] = v.y;
     return Mat3(arr);
   }
 
-  constexpr Mat3 operator*(const Mat3 &rhs) const noexcept {
+  inline Mat3 operator*(const Mat3 &rhs) const noexcept {
     Mat3Array result{};
     for (int i = 0; i < 3; ++i) {
       for (int j = 0; j < 3; ++j) {
@@ -98,7 +98,7 @@ struct Mat3 {
     return Mat3(result);
   }
 
-  constexpr Vec2 operator*(const Vec2 &vec2) const noexcept {
+  inline Vec2 operator*(const Vec2 &vec2) const noexcept {
     return Vec2{
         matrix[0][0] * vec2.x + matrix[0][1] * vec2.y + matrix[0][2],
         matrix[1][0] * vec2.x + matrix[1][1] * vec2.y + matrix[1][2],
